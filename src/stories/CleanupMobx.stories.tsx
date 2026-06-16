@@ -2,6 +2,7 @@ import { observable, runInAction } from "mobx";
 import { useEffect, useMemo, useState } from "react";
 
 import { cleanupReaction, cleanupReactionList } from "../index";
+import { StoryExample, storySource } from "./storySource";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -72,6 +73,50 @@ function MobxExample() {
   );
 }
 
+const mobxExampleSource = `
+function MobxExample() {
+  const store = useMemo(
+    () =>
+      observable({
+        count: 0,
+        users: [] as User[],
+      }),
+    [],
+  );
+  const [events, setEvents] = useState<string[]>([]);
+
+  useEffect(() => {
+    const disposeCount = cleanupReaction(
+      () => store.count,
+      (count) => {
+        setEvents((value) => [\`count changed to \${count}\`, ...value].slice(0, 6));
+      },
+    );
+
+    const disposeUsers = cleanupReactionList(
+      () => store.users,
+      (user) => {
+        setEvents((value) => [\`subscribed to \${user.name}\`, ...value].slice(0, 6));
+        return (isModified) => {
+          setEvents((value) =>
+            [
+              isModified ? \`refreshed \${user.name}\` : \`unsubscribed from \${user.name}\`,
+              ...value,
+            ].slice(0, 6),
+          );
+        };
+      },
+      { getKey: (user) => user.id },
+    );
+
+    return () => {
+      disposeCount();
+      disposeUsers();
+    };
+  }, [store]);
+}
+`;
+
 const meta = {
   title: "Cleanup/MobX",
   component: MobxExample,
@@ -81,4 +126,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Reactions: Story = {};
+export const Reactions: Story = {
+  render: () => (
+    <StoryExample source={mobxExampleSource}>
+      <MobxExample />
+    </StoryExample>
+  ),
+  parameters: storySource(mobxExampleSource),
+};

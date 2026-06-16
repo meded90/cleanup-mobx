@@ -17,6 +17,7 @@ import {
   cleanupTimeout,
   cleanupWindowEventListener,
 } from "../index";
+import { StoryExample, storySource } from "./storySource";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -779,6 +780,49 @@ function AdvancedCleanupShowcase() {
   );
 }
 
+const advancedCleanupSource = `
+function AdvancedCleanupShowcase() {
+  const [query, setQuery] = useState("");
+  const [feedRunning, setFeedRunning] = useState(false);
+  const [feedTick, setFeedTick] = useState(0);
+  const zoneRef = useRef<HTMLDivElement>(null);
+  const store = useMemo(() => observable({ jobs: [] as Job[] }), []);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      return;
+    }
+
+    return cleanupTimeout(() => {
+      // Applies only the latest query because the previous timeout is cleared.
+      runSearch(query);
+    }, "250ms");
+  }, [query]);
+
+  useEffect(() => {
+    if (!feedRunning) {
+      return;
+    }
+
+    return cleanupInterval(() => {
+      setFeedTick((value) => value + 1);
+    }, "180ms");
+  }, [feedRunning]);
+
+  useEffect(() => {
+    return cleanupEventListener("click", handleZoneClick, zoneRef);
+  }, []);
+
+  useEffect(() => {
+    return cleanupReactionList(
+      () => store.jobs,
+      (job) => subscribeToJob(job),
+      { getKey: (job) => job.id },
+    );
+  }, [store]);
+}
+`;
+
 const meta = {
   title: "Cleanup/Advanced Examples",
   component: AdvancedCleanupShowcase,
@@ -789,6 +833,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const TenCleanupPatterns: Story = {
+  render: () => (
+    <StoryExample source={advancedCleanupSource}>
+      <AdvancedCleanupShowcase />
+    </StoryExample>
+  ),
+  parameters: storySource(advancedCleanupSource),
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 

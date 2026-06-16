@@ -1,6 +1,10 @@
 import type { StorybookConfig } from "@storybook/react-vite";
 
-const enableJsdocAutoGeneration = process.env.STORYBOOK_DOCS_WATCH !== "0";
+const isStaticBuild =
+  process.env.STORYBOOK_DOCS_WATCH === "0" ||
+  process.env.npm_lifecycle_event === "storybook:build" ||
+  process.argv.some((arg) => arg === "build");
+const enableJsdocAutoGeneration = !isStaticBuild;
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],

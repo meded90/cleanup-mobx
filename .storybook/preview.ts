@@ -10,6 +10,9 @@ const preview: Preview = {
     },
     docs: {
       toc: true,
+      canvas: {
+        sourceState: "shown",
+      },
     },
     options: {
       storySort: {
