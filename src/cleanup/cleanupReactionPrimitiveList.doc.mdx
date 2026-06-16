@@ -1,10 +1,10 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta } from '@storybook/blocks';
 
-<Meta title="cleanupReactionPrimitiveList" />
+<Meta title="src/cleanup/cleanupReactionPrimitiveList" />
 
 # Primitive
 
-`cleanupReactionPrimitiveList`
+`src/cleanup/cleanupReactionPrimitiveList`
 **AST Node Type:** *TypeAliasDeclaration*
 
 > Тип примитива для cleanupReactionPrimitiveList
@@ -18,7 +18,7 @@ export type Primitive = string | number | bigint;
 
 # IterableElement
 
-`cleanupReactionPrimitiveList`
+`src/cleanup/cleanupReactionPrimitiveList`
 **AST Node Type:** *TypeAliasDeclaration*
 
 > Извлекает тип элемента из Iterable коллекции
@@ -32,7 +32,7 @@ type IterableElement<T> = T extends Iterable<infer E> ? E : never;
 
 # cleanupReactionPrimitiveList
 
-`cleanupReactionPrimitiveList`
+`src/cleanup/cleanupReactionPrimitiveList`
 **AST Node Type:** *FunctionDeclaration*
 
 > Создает MobX reaction для списков примитивов с setup/cleanup pattern: обрабатывает появление и удаление элементов, очищая предыдущие эффекты. В отличие от cleanupReactionList, эта функция оптимизирована для работы с массивами или Set примитивов (string | number | bigint) и использует Set для эффективного сравнения O(1). **Ключевые особенности:** \- Эффект вызывается только для **уникальных** элементов — дубликаты игнорируются \- Поддерживает как \`T[]\`, так и \`Set&lt;T&gt;\` в качестве входных данных \- При удалении элемента автоматически вызывается его disposer \- При добавлении дубликата уже существующего элемента эффект НЕ вызывается повторно

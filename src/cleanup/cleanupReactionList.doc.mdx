@@ -1,10 +1,10 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta } from '@storybook/blocks';
 
-<Meta title="cleanupReactionList" />
+<Meta title="src/cleanup/cleanupReactionList" />
 
 # CleanupReactionListOptions
 
-`cleanupReactionList`
+`src/cleanup/cleanupReactionList`
 **AST Node Type:** *InterfaceDeclaration*
 
 > Опции для cleanupReactionList.
@@ -24,7 +24,7 @@ export interface CleanupReactionListOptions<T extends object, FireImmediately ex
 
 # cleanupReactionList
 
-`cleanupReactionList`
+`src/cleanup/cleanupReactionList`
 **AST Node Type:** *FunctionDeclaration*
 
 > Создает MobX reaction для списков объектов с setup/cleanup pattern: обрабатывает появление, удаление и модификацию элементов, очищая предыдущие эффекты. Для работы с примитивами (string | number | bigint) используйте \{@link cleanupReactionPrimitiveList\}.
