@@ -30,6 +30,16 @@ const config: StorybookConfig = {
   docs: {
     docsMode: false,
   },
+  viteFinal: (config) => ({
+    ...config,
+    resolve: {
+      ...config.resolve,
+      alias: {
+        ...config.resolve?.alias,
+        "@storybook/blocks": "@storybook/addon-docs/blocks",
+      },
+    },
+  }),
 };
 
 export default config;

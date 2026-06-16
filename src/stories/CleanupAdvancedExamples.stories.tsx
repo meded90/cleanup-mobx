@@ -1141,7 +1141,7 @@ type Story = StoryObj<typeof meta>;
 
 export const DebouncedCommandSearch: Story = {
   render: () => (
-    <StoryExample source={debouncedCommandSearchSource}>
+    <StoryExample>
       <DebouncedCommandSearchExample />
     </StoryExample>
   ),
@@ -1164,7 +1164,7 @@ export const DebouncedCommandSearch: Story = {
 
 export const SwitchableTelemetryInterval: Story = {
   render: () => (
-    <StoryExample source={switchableTelemetryIntervalSource}>
+    <StoryExample>
       <SwitchableTelemetryIntervalExample />
     </StoryExample>
   ),
@@ -1186,7 +1186,7 @@ export const SwitchableTelemetryInterval: Story = {
 
 export const RequestAnimationFrameProgress: Story = {
   render: () => (
-    <StoryExample source={requestAnimationFrameProgressSource}>
+    <StoryExample>
       <RequestAnimationFrameProgressExample />
     </StoryExample>
   ),
@@ -1206,7 +1206,7 @@ export const RequestAnimationFrameProgress: Story = {
 
 export const IdleStagedPreload: Story = {
   render: () => (
-    <StoryExample source={idleStagedPreloadSource}>
+    <StoryExample>
       <IdleStagedPreloadExample />
     </StoryExample>
   ),
@@ -1224,7 +1224,7 @@ export const IdleStagedPreload: Story = {
 
 export const ElementEventListenerWithClickCleanup: Story = {
   render: () => (
-    <StoryExample source={elementEventListenerWithClickCleanupSource}>
+    <StoryExample>
       <ElementEventListenerWithClickCleanupExample />
     </StoryExample>
   ),
@@ -1243,7 +1243,7 @@ export const ElementEventListenerWithClickCleanup: Story = {
 
 export const WindowDocumentAndSelectorListeners: Story = {
   render: () => (
-    <StoryExample source={windowDocumentAndSelectorListenersSource}>
+    <StoryExample>
       <WindowDocumentAndSelectorListenersExample />
     </StoryExample>
   ),
@@ -1264,7 +1264,7 @@ export const WindowDocumentAndSelectorListeners: Story = {
 
 export const ScalarMobxResourceReplacement: Story = {
   render: () => (
-    <StoryExample source={scalarMobxResourceReplacementSource}>
+    <StoryExample>
       <ScalarMobxResourceReplacementExample />
     </StoryExample>
   ),
@@ -1285,7 +1285,7 @@ export const ScalarMobxResourceReplacement: Story = {
 
 export const ObjectListSubscriptions: Story = {
   render: () => (
-    <StoryExample source={objectListSubscriptionsSource}>
+    <StoryExample>
       <ObjectListSubscriptionsExample />
     </StoryExample>
   ),
@@ -1312,7 +1312,7 @@ export const ObjectListSubscriptions: Story = {
 
 export const MapKeyedStreamSubscriptions: Story = {
   render: () => (
-    <StoryExample source={mapKeyedStreamSubscriptionsSource}>
+    <StoryExample>
       <MapKeyedStreamSubscriptionsExample />
     </StoryExample>
   ),
@@ -1337,7 +1337,7 @@ export const MapKeyedStreamSubscriptions: Story = {
 
 export const PrimitiveSetAndAutorunSettings: Story = {
   render: () => (
-    <StoryExample source={primitiveSetAndAutorunSettingsSource}>
+    <StoryExample>
       <PrimitiveSetAndAutorunSettingsExample />
     </StoryExample>
   ),

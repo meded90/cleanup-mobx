@@ -74,7 +74,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Timers: Story = {
   render: () => (
-    <StoryExample source={timerExampleSource}>
+    <StoryExample>
       <TimerExample />
     </StoryExample>
   ),

@@ -128,7 +128,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Reactions: Story = {
   render: () => (
-    <StoryExample source={mobxExampleSource}>
+    <StoryExample>
       <MobxExample />
     </StoryExample>
   ),

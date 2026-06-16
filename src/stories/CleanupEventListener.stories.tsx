@@ -75,7 +75,7 @@ type Story = StoryObj<typeof meta>;
 
 export const DomEvent: Story = {
   render: () => (
-    <StoryExample source={eventListenerExampleSource}>
+    <StoryExample>
       <EventListenerExample />
     </StoryExample>
   ),
