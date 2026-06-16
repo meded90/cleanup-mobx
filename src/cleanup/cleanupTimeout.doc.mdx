@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="cleanupTimeout" />
+
+# cleanupTimeout
+
+`cleanupTimeout`
+**AST Node Type:** *FunctionDeclaration*
+
+> Setup/cleanup обертка для setTimeout: при повторном запуске предыдущий таймаут очищается и выполняется его очистка.
+
+#### Parameter:
+
+- `cb`  — функция\-эффект, вызывается после задержки, может вернуть функцию очистки.
+- `delay`  — задержка в мс или строка, допустимая для ms().
+- `dispose`  — опциональная функция очистки для предыдущего эффекта.
+#### Returns:
+  для отмены таймаута и выполнения очистки.
+
+#### Source Code:
+
+```ts
+export function cleanupTimeout(cb: () => void, delay: number | StringValue, dispose?: void | (() => void)): () => void {
+    function innerCb() {
+        const effect = action(cb)();
+        dispose = isFunction(effect) ? effect : undefined;
+    }
+    delay = isString(delay) ? ms(delay) : delay;
+    const timeoutId = setTimeout(innerCb, delay);
+    return action(() => {
+        dispose?.();
+        clearTimeout(timeoutId);
+    });
+}
+
+```
+

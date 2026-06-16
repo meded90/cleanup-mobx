@@ -1,0 +1,52 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="cleanupRequestAnimationFrame" />
+
+# cleanupRequestAnimationFrame
+
+`cleanupRequestAnimationFrame`
+**AST Node Type:** *FunctionDeclaration*
+
+> Setup/cleanup обертка для requestAnimationFrame. При повторном вызове предыдущий кадр отменяется и выполняется его очистка.
+
+#### Parameter:
+
+- `cb`  — функция, вызываемая в анимационном кадре, возвращает опциональную функцию очистки.
+#### Returns:
+  для отмены запрошенного кадра и выполнения очистки.
+#### Example:
+```ts
+const dispose = cleanupRequestAnimationFrame(() => {
+  // код анимации
+  return () => {
+    // опциональная очистка
+  }
+})
+
+// Отмена и очистка:
+dispose()
+```
+
+#### Source Code:
+
+```ts
+export function cleanupRequestAnimationFrame(cb: () => Disposer): () => void {
+    let dispose: void | (() => void);
+    let isCancelled = false;
+    function innerCb() {
+        if (isCancelled) {
+            return;
+        }
+        const effect = cb();
+        dispose = isFunction(effect) ? effect : undefined;
+    }
+    const animationFrameId = requestAnimationFrame(innerCb);
+    return () => {
+        isCancelled = true;
+        dispose?.();
+        cancelAnimationFrame(animationFrameId);
+    };
+}
+
+```
+

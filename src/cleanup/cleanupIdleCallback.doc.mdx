@@ -1,0 +1,28 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="cleanupIdleCallback" />
+
+# cleanupIdleCallback
+
+`cleanupIdleCallback`
+**AST Node Type:** *FunctionDeclaration*
+
+> Setup/cleanup обертка для requestIdleCallback: при отмене очищает запланированный idle callback и выполняет cleanup предыдущего эффекта.
+
+#### Source Code:
+
+```ts
+export function cleanupIdleCallback(cb: (deadline: IdleDeadline) => void | (() => void), options?: IdleRequestOptions, dispose?: void | (() => void)): () => void {
+    const innerCb: IdleRequestCallback = (deadline) => {
+        const effect = action(() => cb(deadline))();
+        dispose = isFunction(effect) ? effect : undefined;
+    };
+    const idleId = requestIdleCallbackSafe(innerCb, options);
+    return action(() => {
+        dispose?.();
+        cancelIdleCallbackSafe(idleId);
+    });
+}
+
+```
+

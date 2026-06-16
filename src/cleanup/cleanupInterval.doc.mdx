@@ -1,0 +1,52 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="cleanupInterval" />
+
+# cleanupInterval
+
+`cleanupInterval`
+**AST Node Type:** *FunctionDeclaration*
+
+> Запускает асинхронный эффект с интервалом, очищая предыдущий результат перед новым вызовом.
+
+#### Parameter:
+
+- `cb`  — функция, возвращающая disposer (или промис с disposer).
+- `delay`  — задержка между вызовами (ms или строка формата ms\-функции).
+#### Returns:
+  для остановки интервала и очистки последнего эффекта.
+
+#### Source Code:
+
+```ts
+export function cleanupInterval(cb: () => Disposer, delay: number | StringValue): () => void {
+    let dispose: void | (() => void);
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let isDisposed = false;
+    const intervalMs = isString(delay) ? ms(delay) : delay;
+    async function run(): Promise<void> {
+        if (isDisposed) {
+            return;
+        }
+        dispose?.();
+        const effect = await cb();
+        dispose = isFunction(effect) ? effect : undefined;
+        if (isDisposed) {
+            return;
+        }
+        timeoutId = setTimeout(run, intervalMs);
+    }
+    timeoutId = setTimeout(run, intervalMs);
+    return () => {
+        isDisposed = true;
+        dispose?.();
+        dispose = undefined;
+        if (timeoutId !== undefined) {
+            clearTimeout(timeoutId);
+            timeoutId = undefined;
+        }
+    };
+}
+
+```
+

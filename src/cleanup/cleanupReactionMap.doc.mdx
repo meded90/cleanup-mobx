@@ -1,0 +1,64 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="cleanupReactionMap" />
+
+# cleanupReactionMap
+
+`cleanupReactionMap`
+**AST Node Type:** *FunctionDeclaration*
+
+> Создает MobX reaction для Map\-структур с setup/cleanup pattern: отслеживает добавление и удаление ключей, очищает предыдущие эффекты.
+
+#### Parameter:
+
+- `expression`  — функция, возвращающая Map или ObservableMap для отслеживания.
+- `effect`  — функция\-эффект для каждого нового значения (val, key, prev, map, r), возвращает disposer.
+- `opts`  — опции реакции MobX.
+#### Returns:
+  — функцию для отмены реакции и очистки всех эффектов.
+
+#### Source Code:
+
+```ts
+export function cleanupReactionMap<Key extends string | number | bigint = string, T = any, IMap extends Map<Key, T> = Map<Key, T>, FireImmediately extends boolean = true>(expression: (r: IReactionPublic) => IMap | ObservableMap<Key, T>, effect: (arg: T, key: Key, prev: FireImmediately extends true ? T | undefined : T, map: IMap, r: IReactionPublic) => ((isModified?: boolean) => void) | void, opts: IReactionOptions<T, FireImmediately> = {}): IReactionDisposer {
+    const localDisposer = new Map<Key, ((isModified?: boolean) => void) | void>();
+    let isInitialRun = true;
+    const disposer = cleanupReaction<MapSnapshot<Key, T, IMap>>((r) => {
+        const map = expression(r);
+        return {
+            keys: [...map.keys()],
+            map,
+        };
+    }, (arg) => {
+        for (const key of localDisposer.keys()) {
+            if (!arg.map.has(key)) {
+                localDisposer.get(key)?.();
+                localDisposer.delete(key);
+            }
+        }
+        for (const key of arg.keys) {
+            if (!localDisposer.has(key)) {
+                localDisposer.set(key, cleanupReaction((r) => {
+                    return expression(r).get(key)!;
+                }, (v, prev, r) => {
+                    return effect(v, key, prev, expression(r), r);
+                }, isInitialRun ? opts : ({ ...opts, fireImmediately: true } as typeof opts)));
+            }
+        }
+        isInitialRun = false;
+    }, {
+        fireImmediately: true,
+        equals: hasSameKeys,
+    });
+    const newDisposer: IReactionDisposer = () => {
+        disposer();
+        localDisposer.forEach((v) => {
+            v?.();
+        });
+    };
+    newDisposer.$mobx = disposer.$mobx;
+    return newDisposer;
+}
+
+```
+

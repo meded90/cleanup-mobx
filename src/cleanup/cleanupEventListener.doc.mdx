@@ -1,0 +1,142 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="cleanupEventListener" />
+
+# cleanupEventListener
+
+`cleanupEventListener`
+**AST Node Type:** *FunctionDeclaration*
+
+> Добавляет слушатель события к DOM\-элементу или объекту, очищая предыдущий слушатель: при новом добавлении предыдущий listener удаляется и по необходимости выполняется очистка.
+
+#### Parameter:
+
+- `type`  — имя события (например, 'click').
+- `func`  — функция\-обработчик, возвращающая опциональную функцию очистки.
+- `ref`  — целевой элемент или ref\-like объект к нему.
+- `options`  — опции addEventListener.
+#### Returns:
+  для удаления слушателя и очистки.
+#### Template:
+- `Type` — \- тип целевого элемента (Element, Window, Document).
+- `Key` — \- тип события.
+
+#### Source Code:
+
+```ts
+export default function cleanupEventListener<Type extends Element | HTMLDivElement | Window | Document | null, Key extends Type extends Window ? keyof WindowEventMap : Type extends Document ? keyof DocumentEventMap : keyof HTMLElementEventMap>(type: Key, func: (event: any | void) => Disposer, ref: RefLike<Type> | Type | null, options?: boolean | AddEventListenerOptions) {
+    let current: Type | null = null;
+    if (!ref) {
+        return () => { };
+    }
+    if ("current" in ref) {
+        current = ref.current;
+    }
+    else {
+        current = ref;
+    }
+    let dispose: void | (() => void);
+    async function innerCb(e: any) {
+        dispose?.();
+        const effect = await func(e);
+        dispose = isFunction(effect) ? effect : undefined;
+    }
+    current?.addEventListener(type, innerCb, options);
+    return () => {
+        dispose?.();
+        dispose = undefined;
+        current?.removeEventListener(type, innerCb, options as EventListenerOptions);
+    };
+}
+
+```
+
+# cleanupWindowEventListener
+
+`cleanupEventListener`
+**AST Node Type:** *FunctionDeclaration*
+
+> Добавляет слушатель окна (window).
+
+#### Parameter:
+
+- `type`  — событие окна.
+- `func`  — функция\-обработчик, возвращающая опциональную очистку.
+- `options`  — опции addEventListener.
+
+#### Source Code:
+
+```ts
+export function cleanupWindowEventListener<E extends keyof WindowEventMap>(type: E, func: (event: WindowEventMap[E] | void) => ReturnType, options?: boolean | AddEventListenerOptions) {
+    return cleanupEventListener(type, func, window, options);
+}
+
+```
+
+# cleanupDocumentEventListener
+
+`cleanupEventListener`
+**AST Node Type:** *FunctionDeclaration*
+
+> Добавляет слушатель документа (document).
+
+#### Parameter:
+
+- `type`  — событие документа.
+- `func`  — функция\-обработчик, возвращающая опциональную очистку.
+- `options`  — опции addEventListener.
+
+#### Source Code:
+
+```ts
+export function cleanupDocumentEventListener<E extends keyof DocumentEventMap>(type: E, func: (event: DocumentEventMap[E] | void) => ReturnType, options?: boolean | AddEventListenerOptions) {
+    return cleanupEventListener(type, func, document, options);
+}
+
+```
+
+# cleanupBodyEventListener
+
+`cleanupEventListener`
+**AST Node Type:** *FunctionDeclaration*
+
+> Добавляет слушатель к body документа.
+
+#### Parameter:
+
+- `type`  — событие HTML\-элемента.
+- `func`  — функция\-обработчик, возвращающая опциональную очистку.
+- `options`  — опции addEventListener.
+
+#### Source Code:
+
+```ts
+export function cleanupBodyEventListener<E extends keyof HTMLElementEventMap>(type: E, func: (event: HTMLElementEventMap[E] | void) => ReturnType, options?: boolean | AddEventListenerOptions) {
+    return cleanupEventListener(type, func, document.body, options);
+}
+
+```
+
+# cleanupSelectorEventListener
+
+`cleanupEventListener`
+**AST Node Type:** *FunctionDeclaration*
+
+> Добавляет слушатель к элементу, найденному по селектору.
+
+#### Parameter:
+
+- `selector`  — CSS\-селектор для поиска элемента.
+- `type`  — событие HTML\-элемента.
+- `func`  — функция\-обработчик, возвращающая опциональную очистку.
+- `options`  — опции addEventListener.
+
+#### Source Code:
+
+```ts
+export function cleanupSelectorEventListener<E extends keyof HTMLElementEventMap>(selector: string, type: E, func: (event: HTMLElementEventMap[E] | void) => ReturnType, options?: boolean | AddEventListenerOptions) {
+    return cleanupEventListener<Element, E>(type, func, document.querySelector(selector), options);
+}
+
+```
+

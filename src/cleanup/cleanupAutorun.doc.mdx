@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="cleanupAutorun" />
+
+# cleanupAutorun
+
+`cleanupAutorun`
+**AST Node Type:** *FunctionDeclaration*
+
+> Создает MobX autorun с cleanup перед повторным запуском: при каждом запуске предыдущий эффект автоматически очищается.
+
+#### Parameter:
+
+- `effect`  — функция\-эффект, возвращающая disposer для очистки.
+- `opts`  — опции autorun из MobX.
+#### Returns:
+  для отмены autorun и внутреннего эффекта.
+
+#### Source Code:
+
+```ts
+export function cleanupAutorun(effect: (r: IReactionPublic) => (() => void) | void, opts: IAutorunOptions = EMPTY_OBJECT) {
+    let localDisposer: (() => void) | undefined;
+    const newEffect = (r: IReactionPublic) => {
+        localDisposer?.();
+        localDisposer = effect(r) ?? undefined;
+    };
+    const disposer = autorun(newEffect, opts);
+    const newDisposer = () => {
+        localDisposer?.();
+        disposer();
+    };
+    return newDisposer;
+}
+
+```
+
