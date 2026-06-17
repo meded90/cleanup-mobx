@@ -1,4 +1,4 @@
-# @meded90/cleanup
+# cleanup-mobx
 
 Setup/cleanup utilities for MobX reactions, timers, animation frames, idle callbacks, and DOM event listeners.
 
@@ -7,7 +7,7 @@ The API follows the React `useEffect` convention: a setup callback may return a 
 ## Install
 
 ```bash
-pnpm add @meded90/cleanup mobx
+pnpm add cleanup-mobx mobx
 ```
 
 `mobx` is a peer dependency. `react` is only used by Storybook examples and TypeScript RefObject typing.
@@ -15,7 +15,7 @@ pnpm add @meded90/cleanup mobx
 ## Usage
 
 ```ts
-import { cleanupReaction, cleanupTimeout } from "@meded90/cleanup";
+import { cleanupReaction, cleanupTimeout } from "cleanup-mobx";
 
 const disposeReaction = cleanupReaction(
   () => store.activeId,
@@ -40,8 +40,8 @@ disposeReaction();
 Each public utility is also available as a package subpath:
 
 ```ts
-import { cleanupReaction } from "@meded90/cleanup/cleanupReaction";
-import { cleanupTimeout } from "@meded90/cleanup/cleanupTimeout";
+import { cleanupReaction } from "cleanup-mobx/cleanupReaction";
+import { cleanupTimeout } from "cleanup-mobx/cleanupTimeout";
 ```
 
 ## API
@@ -117,7 +117,7 @@ import { cleanupTimeout } from "@meded90/cleanup/cleanupTimeout";
    ```bash
    npm login
    npm whoami
-   npm view @meded90/cleanup version
+   npm view cleanup-mobx version
    ```
 
    The `npm view` version must be lower than the local `package.json` version.
@@ -125,22 +125,22 @@ import { cleanupTimeout } from "@meded90/cleanup/cleanupTimeout";
 6. Publish the package:
 
    ```bash
-   npm publish --access public
+   npm publish
    ```
 
-   The package is scoped, so `--access public` is required for the first public publish. `publishConfig.access` also keeps later publishes public.
+   The package is unscoped, so npm publishes it as public by default.
 
 7. Verify the published version:
 
    ```bash
-   npm view @meded90/cleanup version
-   npm view @meded90/cleanup dist-tags
+   npm view cleanup-mobx version
+   npm view cleanup-mobx dist-tags
    ```
 
 `publishConfig.provenance` is enabled for CI-based publishing. npm provenance requires publishing from a supported cloud CI runner such as GitHub Actions or GitLab CI/CD; for a local manual publish, set up a publish workflow or disable provenance for that one command if npm rejects the local publish:
 
 ```bash
-NPM_CONFIG_PROVENANCE=false npm publish --access public
+NPM_CONFIG_PROVENANCE=false npm publish
 ```
 
 ## Storybook

@@ -181,7 +181,7 @@ import { action, makeObservable, observable } from "mobx";
 import { observer } from "mobx-react";
 import { useMemo } from "react";
 import { useViewModel } from "mobx-react-viewmodel";
-import { cleanupReaction } from "@meded90/cleanup";
+import { cleanupReaction } from "cleanup-mobx";
 
 class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceStore }> {
   snapshot = "Inbox:24:normal";
