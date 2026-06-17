@@ -1080,7 +1080,7 @@ function PrimitiveSetAndAutorunSettingsExample() {
 `;
 
 const meta = {
-  title: "Cleanup/Advanced Examples",
+  title: "Example/Advanced Examples",
   component: DebouncedCommandSearchExample,
 } satisfies Meta<typeof DebouncedCommandSearchExample>;
 

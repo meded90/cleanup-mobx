@@ -64,7 +64,7 @@ function TimerExample() {
 `;
 
 const meta = {
-  title: "Cleanup/Timers",
+  title: "Example/Timers",
   component: TimerExample,
 } satisfies Meta<typeof TimerExample>;
 

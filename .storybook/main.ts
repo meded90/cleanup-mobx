@@ -1,5 +1,7 @@
 import type { StorybookConfig } from "@storybook/react-vite";
 
+const jsdocDocsTitlePreset = new URL("./jsdocDocsTitlePreset.cjs", import.meta.url).pathname;
+
 const isStaticBuild =
   process.env.STORYBOOK_DOCS_WATCH === "0" ||
   process.env.npm_lifecycle_event === "storybook:build" ||
@@ -22,6 +24,7 @@ const config: StorybookConfig = {
           },
         ]
       : []),
+    jsdocDocsTitlePreset,
   ],
   framework: {
     name: "@storybook/react-vite",

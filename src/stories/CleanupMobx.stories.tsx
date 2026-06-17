@@ -774,7 +774,7 @@ const Example = observer(function Example() {
 `;
 
 const meta = {
-  title: "Cleanup/MobX",
+  title: "Example/MobX",
   component: ScalarMobxResourceReplacementExample,
 } satisfies Meta<typeof ScalarMobxResourceReplacementExample>;
 

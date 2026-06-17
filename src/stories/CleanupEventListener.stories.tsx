@@ -65,7 +65,7 @@ function EventListenerExample() {
 `;
 
 const meta = {
-  title: "Cleanup/Event Listener",
+  title: "Example/Event Listener",
   component: EventListenerExample,
 } satisfies Meta<typeof EventListenerExample>;
 
