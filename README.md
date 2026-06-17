@@ -57,15 +57,20 @@ disposeReaction();
 
 ## Scripts
 
-```bash
-pnpm dev
-pnpm test
-pnpm typecheck
-pnpm build
-pnpm storybook:build
-pnpm check
-pnpm pack:dry
-```
+- `pnpm dev` - starts Storybook locally on port 6007.
+- `pnpm storybook` - starts Storybook locally on port 6007.
+- `pnpm storybook:build` - builds the static Storybook site into `storybook-static`.
+- `pnpm build` - builds TypeScript declarations and the library bundle.
+- `pnpm build:types` - emits TypeScript declaration files for the package.
+- `pnpm typecheck` - runs TypeScript checks without emitting files.
+- `pnpm test` - runs the Vitest test suite once.
+- `pnpm lint` - runs the linter and applies automatic fixes.
+- `pnpm lint:check` - runs the linter without applying fixes.
+- `pnpm format` - formats the project files.
+- `pnpm format:check` - checks formatting without changing files.
+- `pnpm check` - runs linting, formatting checks, type checks, tests, the package build, and the Storybook build.
+- `pnpm pack:dry` - previews the npm package contents without publishing.
+- `pnpm prepack` - runs the full project check before packaging.
 
 ## Release
 
