@@ -106,42 +106,18 @@ import { cleanupTimeout } from "cleanup-mobx/cleanupTimeout";
 
    Inspect the dry-run output and make sure only the intended files are included.
 
-4. Push the release commit and tag:
+4. Push the release commit and tag. GitHub Actions will publish the package from `.github/workflows/publish.yml`:
 
    ```bash
    git push origin main --follow-tags
    ```
 
-5. Make sure npm authentication is ready:
-
-   ```bash
-   npm login
-   npm whoami
-   npm view cleanup-mobx version
-   ```
-
-   The `npm view` version must be lower than the local `package.json` version.
-
-6. Publish the package:
-
-   ```bash
-   npm publish
-   ```
-
-   The package is unscoped, so npm publishes it as public by default.
-
-7. Verify the published version:
+5. Verify the published version after the workflow finishes:
 
    ```bash
    npm view cleanup-mobx version
    npm view cleanup-mobx dist-tags
    ```
-
-`publishConfig.provenance` is enabled for CI-based publishing. npm provenance requires publishing from a supported cloud CI runner such as GitHub Actions or GitLab CI/CD; for a local manual publish, set up a publish workflow or disable provenance for that one command if npm rejects the local publish:
-
-```bash
-NPM_CONFIG_PROVENANCE=false npm publish
-```
 
 ## Storybook
 
