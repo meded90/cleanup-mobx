@@ -37,6 +37,13 @@ disposeTimeout();
 disposeReaction();
 ```
 
+Each public utility is also available as a package subpath:
+
+```ts
+import { cleanupReaction } from "@meded90/cleanup/cleanupReaction";
+import { cleanupTimeout } from "@meded90/cleanup/cleanupTimeout";
+```
+
 ## API
 
 - [`cleanupReaction`](./src/cleanup/cleanupReaction.ts)
@@ -53,7 +60,6 @@ disposeReaction();
 - [`cleanupInterval`](./src/cleanup/cleanupInterval.ts)
 - [`cleanupRequestAnimationFrame`](./src/cleanup/cleanupRequestAnimationFrame.ts)
 - [`cleanupIdleCallback`](./src/cleanup/cleanupIdleCallback.ts)
-
 
 ## Scripts
 

@@ -24,7 +24,7 @@ import { Meta } from '@storybook/blocks';
 #### Source Code:
 
 ```ts
-export default function cleanupEventListener<Type extends Element | HTMLDivElement | Window | Document | null, Key extends Type extends Window ? keyof WindowEventMap : Type extends Document ? keyof DocumentEventMap : keyof HTMLElementEventMap>(type: Key, func: (event: any | void) => Disposer, ref: RefLike<Type> | Type | null, options?: boolean | AddEventListenerOptions) {
+export function cleanupEventListener<Type extends Element | HTMLDivElement | Window | Document | null, Key extends Type extends Window ? keyof WindowEventMap : Type extends Document ? keyof DocumentEventMap : keyof HTMLElementEventMap>(type: Key, func: (event: any | void) => Disposer, ref: RefLike<Type> | Type | null, options?: boolean | AddEventListenerOptions) {
     let current: Type | null = null;
     if (!ref) {
         return () => { };

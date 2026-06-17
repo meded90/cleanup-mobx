@@ -1,6 +1,8 @@
-import { isFunction } from "lodash";
+import lodash from "lodash";
 
 import { Disposer } from "../types/disposer";
+
+const { isFunction } = lodash;
 
 /**
  * Setup/cleanup wrapper for requestAnimationFrame.

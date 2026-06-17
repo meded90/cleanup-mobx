@@ -1,6 +1,8 @@
-import { isFunction } from "lodash";
+import lodash from "lodash";
 
 import { Disposer } from "../types/disposer";
+
+const { isFunction } = lodash;
 
 type RefLike<Type> = {
   readonly current: Type | null;
@@ -17,7 +19,7 @@ type RefLike<Type> = {
  * @param options - addEventListener options.
  * @returns function for removing the listener and running cleanup.
  */
-export default function cleanupEventListener<
+export function cleanupEventListener<
   Type extends Element | HTMLDivElement | Window | Document | null,
   Key extends Type extends Window
     ? keyof WindowEventMap
@@ -115,3 +117,5 @@ export function cleanupSelectorEventListener<E extends keyof HTMLElementEventMap
 ) {
   return cleanupEventListener<Element, E>(type, func, document.querySelector(selector), options);
 }
+
+export default cleanupEventListener;

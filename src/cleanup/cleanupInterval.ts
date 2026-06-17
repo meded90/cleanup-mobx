@@ -1,7 +1,10 @@
-import { isFunction, isString } from "lodash";
+import lodash from "lodash";
+import ms from "ms";
 
-import ms, { StringValue } from "../ms";
 import { Disposer } from "../types/disposer";
+import { StringValue } from "../types/msStringValue";
+
+const { isFunction, isString } = lodash;
 
 /**
  * Runs an async effect on an interval, cleaning up the previous result before the next call.

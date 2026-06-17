@@ -19,6 +19,5 @@ export type {
 } from "./cleanup/cleanupReactionPrimitiveList";
 export { cleanupRequestAnimationFrame } from "./cleanup/cleanupRequestAnimationFrame";
 export { cleanupTimeout } from "./cleanup/cleanupTimeout";
-export { default as ms } from "./ms";
-export type { StringValue } from "./ms";
 export type { Disposer, DisposerSync } from "./types/disposer";
+export type { StringValue } from "./types/msStringValue";

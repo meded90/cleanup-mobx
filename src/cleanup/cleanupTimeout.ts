@@ -1,7 +1,10 @@
-import { isFunction, isString } from "lodash";
+import lodash from "lodash";
 import { action } from "mobx";
+import ms from "ms";
 
-import ms, { StringValue } from "../ms";
+import { StringValue } from "../types/msStringValue";
+
+const { isFunction, isString } = lodash;
 
 /**
  * Setup/cleanup wrapper for setTimeout:

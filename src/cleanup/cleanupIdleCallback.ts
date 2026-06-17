@@ -1,5 +1,7 @@
-import { isFunction } from "lodash";
+import lodash from "lodash";
 import { action } from "mobx";
+
+const { isFunction } = lodash;
 
 type IdleHandle = number | ReturnType<typeof setTimeout>;
 

@@ -23,6 +23,11 @@
   },
   "files": [
     "dist",
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "!src/**/*.doc.mdx",
+    "!src/**/*.stories.tsx",
+    "!src/**/*.test.ts",
     "README.md",
     "LICENSE"
   ],
@@ -37,6 +42,76 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./cleanupAutorun": {
+      "types": "./dist/cleanup/cleanupAutorun.d.ts",
+      "import": "./dist/cleanupAutorun.js",
+      "require": "./dist/cleanupAutorun.cjs"
+    },
+    "./cleanupBodyEventListener": {
+      "types": "./dist/cleanup/cleanupEventListener.d.ts",
+      "import": "./dist/cleanupEventListener.js",
+      "require": "./dist/cleanupEventListener.cjs"
+    },
+    "./cleanupDocumentEventListener": {
+      "types": "./dist/cleanup/cleanupEventListener.d.ts",
+      "import": "./dist/cleanupEventListener.js",
+      "require": "./dist/cleanupEventListener.cjs"
+    },
+    "./cleanupEventListener": {
+      "types": "./dist/cleanup/cleanupEventListener.d.ts",
+      "import": "./dist/cleanupEventListener.js",
+      "require": "./dist/cleanupEventListener.cjs"
+    },
+    "./cleanupIdleCallback": {
+      "types": "./dist/cleanup/cleanupIdleCallback.d.ts",
+      "import": "./dist/cleanupIdleCallback.js",
+      "require": "./dist/cleanupIdleCallback.cjs"
+    },
+    "./cleanupInterval": {
+      "types": "./dist/cleanup/cleanupInterval.d.ts",
+      "import": "./dist/cleanupInterval.js",
+      "require": "./dist/cleanupInterval.cjs"
+    },
+    "./cleanupReaction": {
+      "types": "./dist/cleanup/cleanupReaction.d.ts",
+      "import": "./dist/cleanupReaction.js",
+      "require": "./dist/cleanupReaction.cjs"
+    },
+    "./cleanupReactionList": {
+      "types": "./dist/cleanup/cleanupReactionList.d.ts",
+      "import": "./dist/cleanupReactionList.js",
+      "require": "./dist/cleanupReactionList.cjs"
+    },
+    "./cleanupReactionMap": {
+      "types": "./dist/cleanup/cleanupReactionMap.d.ts",
+      "import": "./dist/cleanupReactionMap.js",
+      "require": "./dist/cleanupReactionMap.cjs"
+    },
+    "./cleanupReactionPrimitiveList": {
+      "types": "./dist/cleanup/cleanupReactionPrimitiveList.d.ts",
+      "import": "./dist/cleanupReactionPrimitiveList.js",
+      "require": "./dist/cleanupReactionPrimitiveList.cjs"
+    },
+    "./cleanupRequestAnimationFrame": {
+      "types": "./dist/cleanup/cleanupRequestAnimationFrame.d.ts",
+      "import": "./dist/cleanupRequestAnimationFrame.js",
+      "require": "./dist/cleanupRequestAnimationFrame.cjs"
+    },
+    "./cleanupSelectorEventListener": {
+      "types": "./dist/cleanup/cleanupEventListener.d.ts",
+      "import": "./dist/cleanupEventListener.js",
+      "require": "./dist/cleanupEventListener.cjs"
+    },
+    "./cleanupTimeout": {
+      "types": "./dist/cleanup/cleanupTimeout.d.ts",
+      "import": "./dist/cleanupTimeout.js",
+      "require": "./dist/cleanupTimeout.cjs"
+    },
+    "./cleanupWindowEventListener": {
+      "types": "./dist/cleanup/cleanupEventListener.d.ts",
+      "import": "./dist/cleanupEventListener.js",
+      "require": "./dist/cleanupEventListener.cjs"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -47,7 +122,7 @@
     "dev": "storybook dev -p 6007",
     "storybook": "storybook dev -p 6007",
     "storybook:build": "STORYBOOK_DOCS_WATCH=0 storybook build -c .storybook -o storybook-static",
-    "build": "pnpm run build:types && vp build --config vite.config.ts",
+    "build": "rm -rf dist && pnpm run build:types && vp build --config vite.config.ts",
     "build:types": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vp test --config vitest.config.ts --run",
