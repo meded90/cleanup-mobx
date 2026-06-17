@@ -21,12 +21,12 @@ function hasSameKeys<Key extends string | number | bigint, T, IMap extends Map<K
 }
 
 /**
- * Создает MobX reaction для Map-структур с setup/cleanup pattern:
- * отслеживает добавление и удаление ключей, очищает предыдущие эффекты.
- * @param expression - функция, возвращающая Map или ObservableMap для отслеживания.
- * @param effect - функция-эффект для каждого нового значения (val, key, prev, map, r), возвращает disposer.
- * @param opts - опции реакции MobX.
- * @returns IReactionDisposer — функцию для отмены реакции и очистки всех эффектов.
+ * Creates a MobX reaction for Map structures with the setup/cleanup pattern:
+ * tracks key additions and removals while cleaning up previous effects.
+ * @param expression - function that returns the Map or ObservableMap to observe.
+ * @param effect - effect function for each new value (val, key, prev, map, r); returns a disposer.
+ * @param opts - MobX reaction options.
+ * @returns IReactionDisposer for stopping the reaction and cleaning up all effects.
  */
 export function cleanupReactionMap<
   Key extends string | number | bigint = string,

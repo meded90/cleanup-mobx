@@ -1,12 +1,12 @@
 import { action, IReactionDisposer, IReactionOptions, IReactionPublic, reaction } from "mobx";
 
 /**
- * Создает MobX реакцию reaction с setup/cleanup pattern:
- * перед выполнением нового эффекта предыдущий автоматически очищается.
- * @param expression - выражение для отслеживания изменений.
- * @param effect - функция-эффект, принимающая текущее и предыдущее значение, возвращающая disposer.
- * @param opts - опции реакции MobX (fireImmediately, equals и пр.).
- * @returns IReactionDisposer — функцию для отмены реакции и очистки зарезервированного эффекта.
+ * Creates a MobX reaction with the setup/cleanup pattern:
+ * the previous effect is automatically cleaned up before the next effect runs.
+ * @param expression - expression used to track changes.
+ * @param effect - effect function that receives current and previous values and returns a disposer.
+ * @param opts - MobX reaction options (fireImmediately, equals, and so on).
+ * @returns IReactionDisposer for stopping the reaction and cleaning up the reserved effect.
  */
 export function cleanupReaction<T, FireImmediately extends boolean = true>(
   expression: (r: IReactionPublic) => T,

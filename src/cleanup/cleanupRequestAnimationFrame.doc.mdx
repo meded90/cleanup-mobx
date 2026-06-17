@@ -1,29 +1,29 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="src/cleanup/cleanupRequestAnimationFrame" />
+<Meta title="cleanupRequestAnimationFrame" />
 
 # cleanupRequestAnimationFrame
 
-`src/cleanup/cleanupRequestAnimationFrame`
+`cleanupRequestAnimationFrame`
 **AST Node Type:** *FunctionDeclaration*
 
-> Setup/cleanup обертка для requestAnimationFrame. При повторном вызове предыдущий кадр отменяется и выполняется его очистка.
+> Setup/cleanup wrapper for requestAnimationFrame. On rerun, the previous frame is cancelled and its cleanup runs.
 
 #### Parameter:
 
-- `cb`  — функция, вызываемая в анимационном кадре, возвращает опциональную функцию очистки.
+- `cb`  — function called in the animation frame; may return an optional cleanup function.
 #### Returns:
-  для отмены запрошенного кадра и выполнения очистки.
+  for cancelling the requested frame and running cleanup.
 #### Example:
 ```ts
 const dispose = cleanupRequestAnimationFrame(() => {
-  // код анимации
+  // animation code
   return () => {
-    // опциональная очистка
+    // optional cleanup
   }
 })
 
-// Отмена и очистка:
+// Cancel and clean up:
 dispose()
 ```
 

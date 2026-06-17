@@ -7,12 +7,12 @@ import {
   reaction,
 } from "mobx";
 /**
- * Тип примитива для cleanupReactionPrimitiveList
+ * Primitive value type supported by cleanupReactionPrimitiveList.
  */
 export type Primitive = string | number | bigint;
 
 /**
- * Извлекает тип элемента из Iterable коллекции
+ * Extracts the item type from an Iterable collection.
  */
 type IterableElement<T> = T extends Iterable<infer E> ? E : never;
 
@@ -24,26 +24,26 @@ export interface CleanupReactionPrimitiveListOptions<
 type IDisposerParams = (() => void) | void;
 
 /**
- * Создает MobX reaction для списков примитивов с setup/cleanup pattern:
- * обрабатывает появление и удаление элементов, очищая предыдущие эффекты.
+ * Creates a MobX reaction for primitive lists with the setup/cleanup pattern:
+ * handles item additions and removals while cleaning up previous effects.
  *
- * В отличие от cleanupReactionList, эта функция оптимизирована для работы
- * с массивами или Set примитивов (string | number | bigint) и использует Set для
- * эффективного сравнения O(1).
+ * Unlike cleanupReactionList, this function is optimized for arrays or Sets
+ * of primitive values (string | number | bigint) and uses Set operations for
+ * efficient O(1) comparison.
  *
- * **Ключевые особенности:**
- * - Эффект вызывается только для **уникальных** элементов — дубликаты игнорируются
- * - Поддерживает как `T[]`, так и `Set<T>` в качестве входных данных
- * - При удалении элемента автоматически вызывается его disposer
- * - При добавлении дубликата уже существующего элемента эффект НЕ вызывается повторно
+ * **Key behavior:**
+ * - The effect runs only for **unique** items; duplicates are ignored
+ * - Supports both `T[]` and `Set<T>` inputs
+ * - Automatically calls an item's disposer when the item is removed
+ * - Adding a duplicate of an existing item does NOT run the effect again
  *
- * @param expression - функция, возвращающая массив или Set примитивов для отслеживания.
- * @param effect - функция-эффект для каждого **уникального** нового элемента (arg, prev, r), возвращает disposer.
- * @param opts - опции реакции MobX.
- * @returns IReactionDisposer — функцию для отмены реакции и очистки всех эффектов.
+ * @param expression - function that returns the primitive array or Set to observe.
+ * @param effect - effect function for each **unique** new item (arg, prev, r); returns a disposer.
+ * @param opts - MobX reaction options.
+ * @returns IReactionDisposer for stopping the reaction and cleaning up all effects.
  *
  * @example
- * // Работа с массивом ID (числа)
+ * // Working with a numeric ID array
  * let data = observable([1, 2, 3])
  * cleanupReactionPrimitiveList(
  *   () => data,
@@ -56,7 +56,7 @@ type IDisposerParams = (() => void) | void;
  * data.pop() // Removed: 4
  *
  * @example
- * // Работа с Set — удобно когда нужно гарантировать уникальность
+ * // Working with a Set when uniqueness must be guaranteed
  * const activeIds = observable(new Set<number>([1, 2, 3]))
  * cleanupReactionPrimitiveList(
  *   () => activeIds,
@@ -86,13 +86,13 @@ export function cleanupReactionPrimitiveList<
   type E = IterableElement<C> & Primitive;
   const localDisposer = new Map<E, IDisposerParams>();
 
-  // Создаем компаратор для массивов примитивов
+  // Create a comparer for primitive arrays.
   const arrayComparer = (newArray: Set<E>, oldArray: Set<E>): boolean => {
     if (newArray.size !== oldArray.size) {
       return false;
     }
 
-    // Для примитивов используем structural comparer
+    // Use structural comparison for primitive values.
     return comparer.structural(newArray, oldArray);
   };
 
@@ -103,10 +103,10 @@ export function cleanupReactionPrimitiveList<
       r: IReactionPublic,
     ) => {
       const prevSet = prev ?? new Set<E>();
-      // Найти удаленные элементы (есть в предыдущем, нет в текущем) - O(m)
+      // Find removed items (present previously, absent currently) in O(m).
       const removedItems = prevSet?.difference(arg);
 
-      // Очистить эффекты для удаленных элементов
+      // Clean up effects for removed items.
       for (const item of removedItems) {
         const disposer = localDisposer.get(item);
         if (disposer) {
@@ -115,8 +115,8 @@ export function cleanupReactionPrimitiveList<
         }
       }
 
-      // Добавить эффекты для новых уникальных элементов
-      // Используем Set для отслеживания уже обработанных элементов в текущей итерации
+      // Add effects for new unique items.
+      // Use a Set to track items already handled in this iteration.
       const effectAction = action(effect);
       const newItems = arg.difference(prevSet);
       for (const item of newItems) {

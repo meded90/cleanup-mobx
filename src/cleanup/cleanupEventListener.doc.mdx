@@ -1,25 +1,25 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="src/cleanup/cleanupEventListener" />
+<Meta title="cleanupEventListener" />
 
 # cleanupEventListener
 
-`src/cleanup/cleanupEventListener`
+`cleanupEventListener`
 **AST Node Type:** *FunctionDeclaration*
 
-> Добавляет слушатель события к DOM\-элементу или объекту, очищая предыдущий слушатель: при новом добавлении предыдущий listener удаляется и по необходимости выполняется очистка.
+> Adds an event listener to a DOM element or object while cleaning up the previous listener: on each new call, the previous listener is removed and its cleanup runs when needed.
 
 #### Parameter:
 
-- `type`  — имя события (например, 'click').
-- `func`  — функция\-обработчик, возвращающая опциональную функцию очистки.
-- `ref`  — целевой элемент или ref\-like объект к нему.
-- `options`  — опции addEventListener.
+- `type`  — event name (for example, 'click').
+- `func`  — event handler that can return an optional cleanup function.
+- `ref`  — target element or ref\-like object pointing to it.
+- `options`  — addEventListener options.
 #### Returns:
-  для удаления слушателя и очистки.
+  for removing the listener and running cleanup.
 #### Template:
-- `Type` — \- тип целевого элемента (Element, Window, Document).
-- `Key` — \- тип события.
+- `Type` — \- target element type (Element, Window, Document).
+- `Key` — \- event type.
 
 #### Source Code:
 
@@ -53,16 +53,16 @@ export default function cleanupEventListener<Type extends Element | HTMLDivEleme
 
 # cleanupWindowEventListener
 
-`src/cleanup/cleanupEventListener`
+`cleanupEventListener`
 **AST Node Type:** *FunctionDeclaration*
 
-> Добавляет слушатель окна (window).
+> Adds a window event listener.
 
 #### Parameter:
 
-- `type`  — событие окна.
-- `func`  — функция\-обработчик, возвращающая опциональную очистку.
-- `options`  — опции addEventListener.
+- `type`  — window event.
+- `func`  — event handler that can return optional cleanup.
+- `options`  — addEventListener options.
 
 #### Source Code:
 
@@ -75,16 +75,16 @@ export function cleanupWindowEventListener<E extends keyof WindowEventMap>(type:
 
 # cleanupDocumentEventListener
 
-`src/cleanup/cleanupEventListener`
+`cleanupEventListener`
 **AST Node Type:** *FunctionDeclaration*
 
-> Добавляет слушатель документа (document).
+> Adds a document event listener.
 
 #### Parameter:
 
-- `type`  — событие документа.
-- `func`  — функция\-обработчик, возвращающая опциональную очистку.
-- `options`  — опции addEventListener.
+- `type`  — document event.
+- `func`  — event handler that can return optional cleanup.
+- `options`  — addEventListener options.
 
 #### Source Code:
 
@@ -97,16 +97,16 @@ export function cleanupDocumentEventListener<E extends keyof DocumentEventMap>(t
 
 # cleanupBodyEventListener
 
-`src/cleanup/cleanupEventListener`
+`cleanupEventListener`
 **AST Node Type:** *FunctionDeclaration*
 
-> Добавляет слушатель к body документа.
+> Adds an event listener to document.body.
 
 #### Parameter:
 
-- `type`  — событие HTML\-элемента.
-- `func`  — функция\-обработчик, возвращающая опциональную очистку.
-- `options`  — опции addEventListener.
+- `type`  — HTML element event.
+- `func`  — event handler that can return optional cleanup.
+- `options`  — addEventListener options.
 
 #### Source Code:
 
@@ -119,17 +119,17 @@ export function cleanupBodyEventListener<E extends keyof HTMLElementEventMap>(ty
 
 # cleanupSelectorEventListener
 
-`src/cleanup/cleanupEventListener`
+`cleanupEventListener`
 **AST Node Type:** *FunctionDeclaration*
 
-> Добавляет слушатель к элементу, найденному по селектору.
+> Adds an event listener to the element found by selector.
 
 #### Parameter:
 
-- `selector`  — CSS\-селектор для поиска элемента.
-- `type`  — событие HTML\-элемента.
-- `func`  — функция\-обработчик, возвращающая опциональную очистку.
-- `options`  — опции addEventListener.
+- `selector`  — CSS selector used to find the element.
+- `type`  — HTML element event.
+- `func`  — event handler that can return optional cleanup.
+- `options`  — addEventListener options.
 
 #### Source Code:
 

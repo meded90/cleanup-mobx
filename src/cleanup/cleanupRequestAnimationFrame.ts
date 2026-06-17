@@ -3,20 +3,20 @@ import { isFunction } from "lodash";
 import { Disposer } from "../types/disposer";
 
 /**
- * Setup/cleanup обертка для requestAnimationFrame.
- * При повторном вызове предыдущий кадр отменяется и выполняется его очистка.
- * @param cb - функция, вызываемая в анимационном кадре, возвращает опциональную функцию очистки.
- * @returns функцию для отмены запрошенного кадра и выполнения очистки.
+ * Setup/cleanup wrapper for requestAnimationFrame.
+ * On rerun, the previous frame is cancelled and its cleanup runs.
+ * @param cb - function called in the animation frame; may return an optional cleanup function.
+ * @returns function for cancelling the requested frame and running cleanup.
  *
  * @example
  * const dispose = cleanupRequestAnimationFrame(() => {
- *   // код анимации
+ *   // animation code
  *   return () => {
- *     // опциональная очистка
+ *     // optional cleanup
  *   }
  * })
  *
- * // Отмена и очистка:
+ * // Cancel and clean up:
  * dispose()
  */
 export function cleanupRequestAnimationFrame(cb: () => Disposer): () => void {

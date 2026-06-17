@@ -29,8 +29,8 @@ function cancelIdleCallbackSafe(handle: IdleHandle): void {
 }
 
 /**
- * Setup/cleanup обертка для requestIdleCallback:
- * при отмене очищает запланированный idle callback и выполняет cleanup предыдущего эффекта.
+ * Setup/cleanup wrapper for requestIdleCallback:
+ * when cancelled, clears the scheduled idle callback and runs cleanup for the previous effect.
  */
 export function cleanupIdleCallback(
   cb: (deadline: IdleDeadline) => void | (() => void),

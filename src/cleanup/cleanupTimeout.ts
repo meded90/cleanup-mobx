@@ -4,12 +4,12 @@ import { action } from "mobx";
 import ms, { StringValue } from "../ms";
 
 /**
- * Setup/cleanup обертка для setTimeout:
- * при повторном запуске предыдущий таймаут очищается и выполняется его очистка.
- * @param cb - функция-эффект, вызывается после задержки, может вернуть функцию очистки.
- * @param delay - задержка в мс или строка, допустимая для ms().
- * @param dispose - опциональная функция очистки для предыдущего эффекта.
- * @returns функцию для отмены таймаута и выполнения очистки.
+ * Setup/cleanup wrapper for setTimeout:
+ * when rerun, the previous timeout is cleared and its cleanup runs.
+ * @param cb - effect function called after the delay; may return a cleanup function.
+ * @param delay - delay in milliseconds or a string accepted by ms().
+ * @param dispose - optional cleanup function for the previous effect.
+ * @returns function for cancelling the timeout and running cleanup.
  */
 export function cleanupTimeout(
   cb: () => void,

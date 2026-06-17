@@ -8,17 +8,17 @@ import {
 } from "mobx";
 
 /**
- * Опции для cleanupReactionList.
- * @template T - тип элемента массива (должен быть объектом)
- * @template FireImmediately - флаг немедленного срабатывания реакции
+ * Options for cleanupReactionList.
+ * @template T - array item type (must be an object)
+ * @template FireImmediately - whether the reaction fires immediately
  */
 export interface CleanupReactionListOptions<
   T extends object,
   FireImmediately extends boolean = true,
 > extends IReactionOptions<T, FireImmediately> {
   /**
-   * Функция для получения уникального ключа из элемента.
-   * Используется для идентификации объектов при сравнении.
+   * Returns a unique key for an item.
+   * Used to identify objects while comparing list changes.
    * @example (item) => item.id
    */
   getKey: (item: T) => string | number | bigint;
@@ -27,29 +27,29 @@ export interface CleanupReactionListOptions<
 type IDisposerParams = ((isModified?: boolean) => void) | void;
 
 /**
- * Создает MobX reaction для списков объектов с setup/cleanup pattern:
- * обрабатывает появление, удаление и модификацию элементов, очищая предыдущие эффекты.
+ * Creates a MobX reaction for object lists with the setup/cleanup pattern:
+ * handles item additions, removals, and modifications while cleaning up previous effects.
  *
- * Для работы с примитивами (string | number | bigint) используйте
- * {@link cleanupReactionPrimitiveList}.
+ * Use {@link cleanupReactionPrimitiveList} for primitive values
+ * (string | number | bigint).
  *
- * @template T - тип элемента массива (должен быть объектом)
- * @template FireImmediately - флаг немедленного срабатывания реакции
+ * @template T - array item type (must be an object)
+ * @template FireImmediately - whether the reaction fires immediately
  *
- * @param expression - функция, возвращающая массив объектов для отслеживания.
- * @param effect - функция-эффект для каждого нового/измененного элемента (arg, index, list, prev, r),
- *                 возвращает disposer с поддержкой isModified.
- * @param opts - опции реакции MobX + обязательный getKey для идентификации объектов.
- * @returns IReactionDisposer — функцию для отмены реакции и очистки всех эффектов.
+ * @param expression - function that returns the object array to observe.
+ * @param effect - effect function for each new or changed item (arg, index, list, prev, r);
+ *                 returns a disposer that supports isModified.
+ * @param opts - MobX reaction options plus the required getKey object identifier.
+ * @returns IReactionDisposer for stopping the reaction and cleaning up all effects.
  *
  * @example
- * // Работа с объектами и getKey
+ * // Object list with getKey
  * cleanupReactionList(
  *   () => [{id: 1, name: 'A'}, {id: 2, name: 'B'}],
  *   (item) => {
  *     console.log('Added:', item)
  *     return (isModified) => {
- *       if (isModified) return // Объект изменился, не удаляем
+ *       if (isModified) return // The object changed; do not remove it
  *       console.log('Removed:', item)
  *     }
  *   },
@@ -57,18 +57,18 @@ type IDisposerParams = ((isModified?: boolean) => void) | void;
  * )
  *
  * @example
- * // Обработка модификации элемента
+ * // Handling item modifications
  * cleanupReactionList(
  *   () => store.users,
  *   (user) => {
  *     const subscription = api.subscribeToUser(user.id)
  *     return (isModified) => {
  *       if (isModified) {
- *         // Элемент изменился, можно обновить ресурс без переподписки
+ *         // The item changed, so the resource can be updated without resubscribing
  *         subscription.update(user)
  *         return
  *       }
- *       // Элемент удалён - очищаем подписку
+ *       // The item was removed, so clean up the subscription
  *       subscription.unsubscribe()
  *     }
  *   },
@@ -90,18 +90,18 @@ export function cleanupReactionList<T extends object, FireImmediately extends bo
   const localDisposer = new Map<string | number | bigint, IDisposerParams>();
   const equalsComparer: (a: any, b: any) => boolean = customEquals ?? comparer.default;
 
-  // Создаем кастомный comparer для массивов, который использует пользовательский comparer для элементов
+  // Create an array comparer that delegates item comparisons to the custom comparer.
   const arrayComparer = (newArray: T[], oldArray: T[]): boolean => {
     if (newArray.length !== oldArray.length) {
       return false;
     }
 
-    // Если нет кастомного компарера, используем structural для массива
+    // Use MobX structural comparison for the array when no custom comparer is provided.
     if (!customEquals) {
       return comparer.structural(newArray, oldArray);
     }
 
-    // Сравниваем каждый элемент с помощью кастомного компарера
+    // Compare each item with the custom comparer.
     for (const [i, element] of newArray.entries()) {
       if (!equalsComparer(element, oldArray[i])) {
         return false;
@@ -112,59 +112,59 @@ export function cleanupReactionList<T extends object, FireImmediately extends bo
 
   const newEffect = action(
     (arg: T[], prev: FireImmediately extends true ? T[] | undefined : T[], r: IReactionPublic) => {
-      // Создаём Map для быстрого O(1) поиска предыдущих элементов по ключу
+      // Build a Map for O(1) lookup of previous items by key.
       const prevKeysMap = new Map<string | number | bigint, T>();
       prev?.forEach((v) => {
         prevKeysMap.set(getKey(v), v);
       });
 
-      // Создаём Set для быстрого O(1) поиска текущих ключей
+      // Build a Set for O(1) lookup of current keys.
       const currentKeysSet = new Set<string | number | bigint>();
       arg.forEach((v) => {
         currentKeysSet.add(getKey(v));
       });
 
-      // Найти новые элементы - O(n) вместо O(n*m)
+      // Find new items in O(n) instead of O(n*m).
       const newArg = arg.filter((v) => {
         const vKey = getKey(v);
         return !prevKeysMap.has(vKey);
       });
 
-      // Найти удаленные элементы - O(m) вместо O(n*m)
+      // Find removed items in O(m) instead of O(n*m).
       const removeArg = prev?.filter((v) => {
         const vKey = getKey(v);
         return !currentKeysSet.has(vKey);
       });
 
-      // Очистить эффекты для удаленных элементов
+      // Clean up effects for removed items.
       removeArg?.forEach((v) => {
         const key = getKey(v);
         const disposer = localDisposer.get(key);
         if (disposer) {
-          disposer(); // isModified не передаем, значит false (удаление)
+          disposer(); // Omit isModified, which means false/removal.
           localDisposer.delete(key);
         }
       });
 
-      // Обработать изменившиеся элементы
+      // Handle changed items.
       arg.forEach((v, index) => {
         const key = getKey(v);
-        const prevItem = prevKeysMap.get(key); // O(1) вместо O(m)
+        const prevItem = prevKeysMap.get(key); // O(1) instead of O(m).
 
-        // Если элемент существовал и изменился
+        // The item existed before and has changed.
         if (prevItem && !equalsComparer(v, prevItem)) {
           const disposer = localDisposer.get(key);
           if (disposer) {
             disposer(true); // isModified = true
           }
-          // Создаем новый эффект для измененного элемента
+          // Create a new effect for the changed item.
           const effectAction = action(effect);
           localDisposer.set(key, effectAction(v, index, arg, prev, r));
         }
       });
 
-      // Добавить эффекты для новых элементов
-      // Создаём Map для быстрого O(1) поиска индексов вместо O(n) indexOf
+      // Add effects for new items.
+      // Build a Map for O(1) index lookup instead of O(n) indexOf.
       const indexMap = new Map<T, number>();
       arg.forEach((v, index) => {
         indexMap.set(v, index);
@@ -181,7 +181,7 @@ export function cleanupReactionList<T extends object, FireImmediately extends bo
 
   const disposer = reaction(
     (r) => {
-      // Получаем массив и создаем его копию для отслеживания изменений
+      // Read the array and clone it so changes can be tracked.
       const arr = expression(r);
       return [...arr];
     },

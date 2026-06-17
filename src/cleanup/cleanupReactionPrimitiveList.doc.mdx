@@ -1,13 +1,13 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="src/cleanup/cleanupReactionPrimitiveList" />
+<Meta title="cleanupReactionPrimitiveList" />
 
 # Primitive
 
-`src/cleanup/cleanupReactionPrimitiveList`
+`cleanupReactionPrimitiveList`
 **AST Node Type:** *TypeAliasDeclaration*
 
-> Тип примитива для cleanupReactionPrimitiveList
+> Primitive value type supported by cleanupReactionPrimitiveList.
 
 #### Source Code:
 
@@ -18,10 +18,10 @@ export type Primitive = string | number | bigint;
 
 # IterableElement
 
-`src/cleanup/cleanupReactionPrimitiveList`
+`cleanupReactionPrimitiveList`
 **AST Node Type:** *TypeAliasDeclaration*
 
-> Извлекает тип элемента из Iterable коллекции
+> Extracts the item type from an Iterable collection.
 
 #### Source Code:
 
@@ -32,21 +32,21 @@ type IterableElement<T> = T extends Iterable<infer E> ? E : never;
 
 # cleanupReactionPrimitiveList
 
-`src/cleanup/cleanupReactionPrimitiveList`
+`cleanupReactionPrimitiveList`
 **AST Node Type:** *FunctionDeclaration*
 
-> Создает MobX reaction для списков примитивов с setup/cleanup pattern: обрабатывает появление и удаление элементов, очищая предыдущие эффекты. В отличие от cleanupReactionList, эта функция оптимизирована для работы с массивами или Set примитивов (string | number | bigint) и использует Set для эффективного сравнения O(1). **Ключевые особенности:** \- Эффект вызывается только для **уникальных** элементов — дубликаты игнорируются \- Поддерживает как \`T[]\`, так и \`Set&lt;T&gt;\` в качестве входных данных \- При удалении элемента автоматически вызывается его disposer \- При добавлении дубликата уже существующего элемента эффект НЕ вызывается повторно
+> Creates a MobX reaction for primitive lists with the setup/cleanup pattern: handles item additions and removals while cleaning up previous effects. Unlike cleanupReactionList, this function is optimized for arrays or Sets of primitive values (string | number | bigint) and uses Set operations for efficient O(1) comparison. **Key behavior:** \- The effect runs only for **unique** items; duplicates are ignored \- Supports both \`T[]\` and \`Set&lt;T&gt;\` inputs \- Automatically calls an item's disposer when the item is removed \- Adding a duplicate of an existing item does NOT run the effect again
 
 #### Parameter:
 
-- `expression`  — функция, возвращающая массив или Set примитивов для отслеживания.
-- `effect`  — функция\-эффект для каждого **уникального** нового элемента (arg, prev, r), возвращает disposer.
-- `opts`  — опции реакции MobX.
+- `expression`  — function that returns the primitive array or Set to observe.
+- `effect`  — effect function for each **unique** new item (arg, prev, r); returns a disposer.
+- `opts`  — MobX reaction options.
 #### Returns:
-  — функцию для отмены реакции и очистки всех эффектов.
+  for stopping the reaction and cleaning up all effects.
 #### Example:
 ```ts
-// Работа с массивом ID (числа)
+// Working with a numeric ID array
 let data = observable([1, 2, 3])
 cleanupReactionPrimitiveList(
   () => data,
@@ -59,7 +59,7 @@ data.push(4) // Added: 4
 data.pop() // Removed: 4
 ```
 ```ts
-// Работа с Set — удобно когда нужно гарантировать уникальность
+// Working with a Set when uniqueness must be guaranteed
 const activeIds = observable(new Set<number>([1, 2, 3]))
 cleanupReactionPrimitiveList(
   () => activeIds,

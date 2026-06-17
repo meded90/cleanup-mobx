@@ -5,11 +5,11 @@ import { EMPTY_OBJECT } from "../types/disposer";
 import type { IAutorunOptions } from "mobx";
 
 /**
- * Создает MobX autorun с cleanup перед повторным запуском:
- * при каждом запуске предыдущий эффект автоматически очищается.
- * @param effect - функция-эффект, возвращающая disposer для очистки.
- * @param opts - опции autorun из MobX.
- * @returns функцию для отмены autorun и внутреннего эффекта.
+ * Creates a MobX autorun with cleanup before each rerun:
+ * the previous effect is automatically cleaned up on every run.
+ * @param effect - effect function that returns a cleanup disposer.
+ * @param opts - MobX autorun options.
+ * @returns function for stopping the autorun and cleaning up the inner effect.
  */
 export function cleanupAutorun(
   effect: (r: IReactionPublic) => (() => void) | void,

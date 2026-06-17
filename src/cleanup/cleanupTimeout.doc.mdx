@@ -1,21 +1,21 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="src/cleanup/cleanupTimeout" />
+<Meta title="cleanupTimeout" />
 
 # cleanupTimeout
 
-`src/cleanup/cleanupTimeout`
+`cleanupTimeout`
 **AST Node Type:** *FunctionDeclaration*
 
-> Setup/cleanup обертка для setTimeout: при повторном запуске предыдущий таймаут очищается и выполняется его очистка.
+> Setup/cleanup wrapper for setTimeout: when rerun, the previous timeout is cleared and its cleanup runs.
 
 #### Parameter:
 
-- `cb`  — функция\-эффект, вызывается после задержки, может вернуть функцию очистки.
-- `delay`  — задержка в мс или строка, допустимая для ms().
-- `dispose`  — опциональная функция очистки для предыдущего эффекта.
+- `cb`  — effect function called after the delay; may return a cleanup function.
+- `delay`  — delay in milliseconds or a string accepted by ms().
+- `dispose`  — optional cleanup function for the previous effect.
 #### Returns:
-  для отмены таймаута и выполнения очистки.
+  for cancelling the timeout and running cleanup.
 
 #### Source Code:
 

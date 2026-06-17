@@ -1,21 +1,21 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="src/cleanup/cleanupReactionMap" />
+<Meta title="cleanupReactionMap" />
 
 # cleanupReactionMap
 
-`src/cleanup/cleanupReactionMap`
+`cleanupReactionMap`
 **AST Node Type:** *FunctionDeclaration*
 
-> Создает MobX reaction для Map\-структур с setup/cleanup pattern: отслеживает добавление и удаление ключей, очищает предыдущие эффекты.
+> Creates a MobX reaction for Map structures with the setup/cleanup pattern: tracks key additions and removals while cleaning up previous effects.
 
 #### Parameter:
 
-- `expression`  — функция, возвращающая Map или ObservableMap для отслеживания.
-- `effect`  — функция\-эффект для каждого нового значения (val, key, prev, map, r), возвращает disposer.
-- `opts`  — опции реакции MobX.
+- `expression`  — function that returns the Map or ObservableMap to observe.
+- `effect`  — effect function for each new value (val, key, prev, map, r); returns a disposer.
+- `opts`  — MobX reaction options.
 #### Returns:
-  — функцию для отмены реакции и очистки всех эффектов.
+  for stopping the reaction and cleaning up all effects.
 
 #### Source Code:
 

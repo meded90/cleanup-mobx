@@ -4,10 +4,10 @@ import ms, { StringValue } from "../ms";
 import { Disposer } from "../types/disposer";
 
 /**
- * Запускает асинхронный эффект с интервалом, очищая предыдущий результат перед новым вызовом.
- * @param cb - функция, возвращающая disposer (или промис с disposer).
- * @param delay - задержка между вызовами (ms или строка формата ms-функции).
- * @returns функцию для остановки интервала и очистки последнего эффекта.
+ * Runs an async effect on an interval, cleaning up the previous result before the next call.
+ * @param cb - function that returns a disposer (or a promise resolving to a disposer).
+ * @param delay - delay between calls (milliseconds or an ms-formatted string).
+ * @returns function for stopping the interval and cleaning up the latest effect.
  */
 export function cleanupInterval(cb: () => Disposer, delay: number | StringValue): () => void {
   let dispose: void | (() => void);

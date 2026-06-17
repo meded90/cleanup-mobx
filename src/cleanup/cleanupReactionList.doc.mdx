@@ -1,17 +1,17 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="src/cleanup/cleanupReactionList" />
+<Meta title="cleanupReactionList" />
 
 # CleanupReactionListOptions
 
-`src/cleanup/cleanupReactionList`
+`cleanupReactionList`
 **AST Node Type:** *InterfaceDeclaration*
 
-> Опции для cleanupReactionList.
+> Options for cleanupReactionList.
 
 #### Template:
-- `T` — \- тип элемента массива (должен быть объектом)
-- `FireImmediately` — \- флаг немедленного срабатывания реакции
+- `T` — \- array item type (must be an object)
+- `FireImmediately` — \- whether the reaction fires immediately
 
 #### Source Code:
 
@@ -24,27 +24,27 @@ export interface CleanupReactionListOptions<T extends object, FireImmediately ex
 
 # cleanupReactionList
 
-`src/cleanup/cleanupReactionList`
+`cleanupReactionList`
 **AST Node Type:** *FunctionDeclaration*
 
-> Создает MobX reaction для списков объектов с setup/cleanup pattern: обрабатывает появление, удаление и модификацию элементов, очищая предыдущие эффекты. Для работы с примитивами (string | number | bigint) используйте \{@link cleanupReactionPrimitiveList\}.
+> Creates a MobX reaction for object lists with the setup/cleanup pattern: handles item additions, removals, and modifications while cleaning up previous effects. Use \{@link cleanupReactionPrimitiveList\} for primitive values (string | number | bigint).
 
 #### Parameter:
 
-- `expression`  — функция, возвращающая массив объектов для отслеживания.
-- `effect`  — функция\-эффект для каждого нового/измененного элемента (arg, index, list, prev, r), возвращает disposer с поддержкой isModified.
-- `opts`  — опции реакции MobX + обязательный getKey для идентификации объектов.
+- `expression`  — function that returns the object array to observe.
+- `effect`  — effect function for each new or changed item (arg, index, list, prev, r); returns a disposer that supports isModified.
+- `opts`  — MobX reaction options plus the required getKey object identifier.
 #### Returns:
-  — функцию для отмены реакции и очистки всех эффектов.
+  for stopping the reaction and cleaning up all effects.
 #### Example:
 ```ts
-// Работа с объектами и getKey
+// Object list with getKey
 cleanupReactionList(
   () => [{id: 1, name: 'A'}, {id: 2, name: 'B'}],
   (item) => {
     console.log('Added:', item)
     return (isModified) => {
-      if (isModified) return // Объект изменился, не удаляем
+      if (isModified) return // The object changed; do not remove it
       console.log('Removed:', item)
     }
   },
@@ -52,18 +52,18 @@ cleanupReactionList(
 )
 ```
 ```ts
-// Обработка модификации элемента
+// Handling item modifications
 cleanupReactionList(
   () => store.users,
   (user) => {
     const subscription = api.subscribeToUser(user.id)
     return (isModified) => {
       if (isModified) {
-        // Элемент изменился, можно обновить ресурс без переподписки
+        // The item changed, so the resource can be updated without resubscribing
         subscription.update(user)
         return
       }
-      // Элемент удалён - очищаем подписку
+      // The item was removed, so clean up the subscription
       subscription.unsubscribe()
     }
   },
@@ -71,8 +71,8 @@ cleanupReactionList(
 )
 ```
 #### Template:
-- `T` — \- тип элемента массива (должен быть объектом)
-- `FireImmediately` — \- флаг немедленного срабатывания реакции
+- `T` — \- array item type (must be an object)
+- `FireImmediately` — \- whether the reaction fires immediately
 
 #### Source Code:
 

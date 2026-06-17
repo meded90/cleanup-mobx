@@ -1,20 +1,20 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="src/cleanup/cleanupInterval" />
+<Meta title="cleanupInterval" />
 
 # cleanupInterval
 
-`src/cleanup/cleanupInterval`
+`cleanupInterval`
 **AST Node Type:** *FunctionDeclaration*
 
-> Запускает асинхронный эффект с интервалом, очищая предыдущий результат перед новым вызовом.
+> Runs an async effect on an interval, cleaning up the previous result before the next call.
 
 #### Parameter:
 
-- `cb`  — функция, возвращающая disposer (или промис с disposer).
-- `delay`  — задержка между вызовами (ms или строка формата ms\-функции).
+- `cb`  — function that returns a disposer (or a promise resolving to a disposer).
+- `delay`  — delay between calls (milliseconds or an ms\-formatted string).
 #### Returns:
-  для остановки интервала и очистки последнего эффекта.
+  for stopping the interval and cleaning up the latest effect.
 
 #### Source Code:
 

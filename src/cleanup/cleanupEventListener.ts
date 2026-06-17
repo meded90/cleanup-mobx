@@ -7,15 +7,15 @@ type RefLike<Type> = {
 };
 
 /**
- * Добавляет слушатель события к DOM-элементу или объекту, очищая предыдущий слушатель:
- * при новом добавлении предыдущий listener удаляется и по необходимости выполняется очистка.
- * @template Type - тип целевого элемента (Element, Window, Document).
- * @template Key - тип события.
- * @param type - имя события (например, 'click').
- * @param func - функция-обработчик, возвращающая опциональную функцию очистки.
- * @param ref - целевой элемент или ref-like объект к нему.
- * @param options - опции addEventListener.
- * @returns функцию для удаления слушателя и очистки.
+ * Adds an event listener to a DOM element or object while cleaning up the previous listener:
+ * on each new call, the previous listener is removed and its cleanup runs when needed.
+ * @template Type - target element type (Element, Window, Document).
+ * @template Key - event type.
+ * @param type - event name (for example, 'click').
+ * @param func - event handler that can return an optional cleanup function.
+ * @param ref - target element or ref-like object pointing to it.
+ * @param options - addEventListener options.
+ * @returns function for removing the listener and running cleanup.
  */
 export default function cleanupEventListener<
   Type extends Element | HTMLDivElement | Window | Document | null,
@@ -59,10 +59,10 @@ export default function cleanupEventListener<
 
 type ReturnType = (() => void) | Promise<(() => unknown) | void> | void;
 /**
- * Добавляет слушатель окна (window).
- * @param type - событие окна.
- * @param func - функция-обработчик, возвращающая опциональную очистку.
- * @param options - опции addEventListener.
+ * Adds a window event listener.
+ * @param type - window event.
+ * @param func - event handler that can return optional cleanup.
+ * @param options - addEventListener options.
  */
 export function cleanupWindowEventListener<E extends keyof WindowEventMap>(
   type: E,
@@ -73,10 +73,10 @@ export function cleanupWindowEventListener<E extends keyof WindowEventMap>(
 }
 
 /**
- * Добавляет слушатель документа (document).
- * @param type - событие документа.
- * @param func - функция-обработчик, возвращающая опциональную очистку.
- * @param options - опции addEventListener.
+ * Adds a document event listener.
+ * @param type - document event.
+ * @param func - event handler that can return optional cleanup.
+ * @param options - addEventListener options.
  */
 export function cleanupDocumentEventListener<E extends keyof DocumentEventMap>(
   type: E,
@@ -87,10 +87,10 @@ export function cleanupDocumentEventListener<E extends keyof DocumentEventMap>(
 }
 
 /**
- * Добавляет слушатель к body документа.
- * @param type - событие HTML-элемента.
- * @param func - функция-обработчик, возвращающая опциональную очистку.
- * @param options - опции addEventListener.
+ * Adds an event listener to document.body.
+ * @param type - HTML element event.
+ * @param func - event handler that can return optional cleanup.
+ * @param options - addEventListener options.
  */
 export function cleanupBodyEventListener<E extends keyof HTMLElementEventMap>(
   type: E,
@@ -101,11 +101,11 @@ export function cleanupBodyEventListener<E extends keyof HTMLElementEventMap>(
 }
 
 /**
- * Добавляет слушатель к элементу, найденному по селектору.
- * @param selector - CSS-селектор для поиска элемента.
- * @param type - событие HTML-элемента.
- * @param func - функция-обработчик, возвращающая опциональную очистку.
- * @param options - опции addEventListener.
+ * Adds an event listener to the element found by selector.
+ * @param selector - CSS selector used to find the element.
+ * @param type - HTML element event.
+ * @param func - event handler that can return optional cleanup.
+ * @param options - addEventListener options.
  */
 export function cleanupSelectorEventListener<E extends keyof HTMLElementEventMap>(
   selector: string,
