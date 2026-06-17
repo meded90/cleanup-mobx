@@ -91,7 +91,7 @@ function EventList(props: { items: string[] }) {
 //region Scalar MobX resource replacement
 
 type ScalarResourceStore = {
-  link: "RX" | "TX";
+  workspace: "Inbox" | "Backlog";
   load: number;
   warning: boolean;
 };
@@ -101,7 +101,7 @@ type ScalarResourceProps = {
 };
 
 class ScalarResourceViewModel extends CleanupViewModel<ScalarResourceProps> {
-  snapshot = "RX:24:normal";
+  snapshot = "Inbox:24:normal";
   events: string[] = [];
 
   constructor(props: ScalarResourceProps) {
@@ -110,7 +110,7 @@ class ScalarResourceViewModel extends CleanupViewModel<ScalarResourceProps> {
       snapshot: observable,
       events: observable.shallow,
       increaseLoad: action.bound,
-      toggleLink: action.bound,
+      toggleWorkspace: action.bound,
     });
   }
 
@@ -119,7 +119,7 @@ class ScalarResourceViewModel extends CleanupViewModel<ScalarResourceProps> {
       cleanupReaction(
         () =>
           [
-            this.props.store.link,
+            this.props.store.workspace,
             this.props.store.load,
             this.props.store.warning ? "warning" : "normal",
           ].join(":"),
@@ -139,8 +139,8 @@ class ScalarResourceViewModel extends CleanupViewModel<ScalarResourceProps> {
     this.props.store.warning = this.props.store.load > 50;
   }
 
-  toggleLink(): void {
-    this.props.store.link = this.props.store.link === "RX" ? "TX" : "RX";
+  toggleWorkspace(): void {
+    this.props.store.workspace = this.props.store.workspace === "Inbox" ? "Backlog" : "Inbox";
   }
 }
 
@@ -149,7 +149,7 @@ const ScalarMobxResourceReplacementExample = observer(
     const store = useMemo(
       () =>
         observable<ScalarResourceStore>({
-          link: "RX",
+          workspace: "Inbox",
           load: 24,
           warning: false,
         }),
@@ -163,8 +163,8 @@ const ScalarMobxResourceReplacementExample = observer(
           <button style={buttonStyle} type="button" onClick={vm.increaseLoad}>
             Increase load
           </button>
-          <button style={buttonStyle} type="button" onClick={vm.toggleLink}>
-            Toggle link
+          <button style={buttonStyle} type="button" onClick={vm.toggleWorkspace}>
+            Toggle workspace
           </button>
         </div>
         <span data-testid="scalar-snapshot" style={metricStyle}>
@@ -184,7 +184,7 @@ import { useViewModel } from "mobx-react-viewmodel";
 import { cleanupReaction } from "@meded90/cleanup";
 
 class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceStore }> {
-  snapshot = "RX:24:normal";
+  snapshot = "Inbox:24:normal";
   events: string[] = [];
 
   constructor(props: { store: ScalarResourceStore }) {
@@ -193,7 +193,7 @@ class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceSt
       snapshot: observable,
       events: observable.shallow,
       increaseLoad: action.bound,
-      toggleLink: action.bound,
+      toggleWorkspace: action.bound,
     });
   }
 
@@ -201,7 +201,7 @@ class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceSt
     this.disposers.push(
       cleanupReaction(
         () => [
-          this.props.store.link,
+          this.props.store.workspace,
           this.props.store.load,
           this.props.store.warning ? "warning" : "normal",
         ].join(":"),
@@ -221,14 +221,15 @@ class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceSt
     this.props.store.warning = this.props.store.load > 50;
   }
 
-  toggleLink() {
-    this.props.store.link = this.props.store.link === "RX" ? "TX" : "RX";
+  toggleWorkspace() {
+    this.props.store.workspace =
+      this.props.store.workspace === "Inbox" ? "Backlog" : "Inbox";
   }
 }
 
 const ScalarMobxResourceReplacementExample = observer(function Example() {
   const store = useMemo(
-    () => observable({ link: "RX", load: 24, warning: false }),
+    () => observable({ workspace: "Inbox", load: 24, warning: false }),
     [],
   );
   const vm = useViewModel(ScalarResourceViewModel, { store });
@@ -236,7 +237,7 @@ const ScalarMobxResourceReplacementExample = observer(function Example() {
   return (
     <section>
       <button onClick={vm.increaseLoad}>Increase load</button>
-      <button onClick={vm.toggleLink}>Toggle link</button>
+      <button onClick={vm.toggleWorkspace}>Toggle workspace</button>
       <span>{vm.snapshot}</span>
       <ol>{vm.events.map((event) => <li key={event}>{event}</li>)}</ol>
     </section>
@@ -266,10 +267,10 @@ export const ScalarMobxResourceReplacement: Story = {
     await step("replaces scalar resource subscriptions on observable changes", async () => {
       await userEvent.click(canvas.getByRole("button", { name: "Increase load" }));
       await waitFor(() =>
-        expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("RX:41:normal"),
+        expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("Inbox:41:normal"),
       );
-      await userEvent.click(canvas.getByRole("button", { name: "Toggle link" }));
-      await expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("TX:41:normal");
+      await userEvent.click(canvas.getByRole("button", { name: "Toggle workspace" }));
+      await expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("Backlog:41:normal");
     });
   },
 };
@@ -278,18 +279,18 @@ export const ScalarMobxResourceReplacement: Story = {
 
 //region ViewModel list subscriptions
 
-type LinkTask = {
+type WorkflowTask = {
   id: number;
   title: string;
   state: "queued" | "running" | "done";
 };
 
-type LinkTaskStore = {
-  tasks: LinkTask[];
+type WorkflowTaskStore = {
+  tasks: WorkflowTask[];
 };
 
 type TaskSubscriptionProps = {
-  store: LinkTaskStore;
+  store: WorkflowTaskStore;
 };
 
 class TaskSubscriptionViewModel extends CleanupViewModel<TaskSubscriptionProps> {
@@ -337,7 +338,7 @@ class TaskSubscriptionViewModel extends CleanupViewModel<TaskSubscriptionProps> 
   addTask(): void {
     this.props.store.tasks = [
       ...this.props.store.tasks,
-      { id: 3, title: "Calibrate link", state: "queued" },
+      { id: 3, title: "Prepare release notes", state: "queued" },
     ];
   }
 
@@ -355,10 +356,10 @@ class TaskSubscriptionViewModel extends CleanupViewModel<TaskSubscriptionProps> 
 const ViewModelListSubscriptionsExample = observer(function ViewModelListSubscriptionsExample() {
   const store = useMemo(
     () =>
-      observable<LinkTaskStore>({
+      observable<WorkflowTaskStore>({
         tasks: [
-          { id: 1, title: "Warm decoder", state: "queued" },
-          { id: 2, title: "Open tower stream", state: "running" },
+          { id: 1, title: "Review todo list", state: "queued" },
+          { id: 2, title: "Assign project owner", state: "running" },
         ],
       }),
     [],
@@ -387,11 +388,11 @@ const ViewModelListSubscriptionsExample = observer(function ViewModelListSubscri
 });
 
 const viewModelListSubscriptionsSource = `
-class TaskSubscriptionViewModel extends CleanupViewModel<{ store: LinkTaskStore }> {
+class TaskSubscriptionViewModel extends CleanupViewModel<{ store: WorkflowTaskStore }> {
   activeTaskIds: number[] = [];
   events: string[] = [];
 
-  constructor(props: { store: LinkTaskStore }) {
+  constructor(props: { store: WorkflowTaskStore }) {
     super(props);
     makeObservable(this, {
       activeTaskIds: observable.shallow,
@@ -433,8 +434,8 @@ class TaskSubscriptionViewModel extends CleanupViewModel<{ store: LinkTaskStore 
 const Example = observer(function Example() {
   const store = useMemo(() => observable({
     tasks: [
-      { id: 1, title: "Warm decoder", state: "queued" },
-      { id: 2, title: "Open tower stream", state: "running" },
+      { id: 1, title: "Review todo list", state: "queued" },
+      { id: 2, title: "Assign project owner", state: "running" },
     ],
   }), []);
   const vm = useViewModel(TaskSubscriptionViewModel, { store });
@@ -468,7 +469,7 @@ export const ViewModelListSubscriptions: Story = {
       );
       await userEvent.click(canvas.getByRole("button", { name: "Update task" }));
       await waitFor(() =>
-        expect(canvas.getByText("refresh Open tower stream")).toBeInTheDocument(),
+        expect(canvas.getByText("refresh Assign project owner")).toBeInTheDocument(),
       );
       await userEvent.click(canvas.getByRole("button", { name: "Remove task" }));
       await waitFor(() =>
@@ -499,8 +500,8 @@ type JobSubscriptionProps = {
 };
 
 const initialJobs: Job[] = [
-  { id: 1, title: "Warm decoder", state: "queued" },
-  { id: 2, title: "Open tower stream", state: "running" },
+  { id: 1, title: "Review todo list", state: "queued" },
+  { id: 2, title: "Assign project owner", state: "running" },
 ];
 
 class ObjectListSubscriptionViewModel extends CleanupViewModel<JobSubscriptionProps> {
@@ -545,7 +546,7 @@ class ObjectListSubscriptionViewModel extends CleanupViewModel<JobSubscriptionPr
   addJob(): void {
     this.props.store.jobs = [
       ...this.props.store.jobs,
-      { id: 3, title: "Calibrate clock", state: "queued" },
+      { id: 3, title: "Prepare onboarding checklist", state: "queued" },
     ];
   }
 
@@ -638,8 +639,8 @@ class ObjectListSubscriptionViewModel extends CleanupViewModel<{ store: JobStore
 const Example = observer(function Example() {
   const store = useMemo(() => observable({
     jobs: [
-      { id: 1, title: "Warm decoder", state: "queued" },
-      { id: 2, title: "Open tower stream", state: "running" },
+      { id: 1, title: "Review todo list", state: "queued" },
+      { id: 2, title: "Assign project owner", state: "running" },
     ],
   }), []);
   const vm = useViewModel(ObjectListSubscriptionViewModel, { store });
@@ -675,7 +676,7 @@ export const ObjectListSubscriptions: Story = {
         );
         await userEvent.click(canvas.getByRole("button", { name: "Update job" }));
         await waitFor(() =>
-          expect(canvas.getByText("refresh Open tower stream")).toBeInTheDocument(),
+          expect(canvas.getByText("refresh Assign project owner")).toBeInTheDocument(),
         );
         await userEvent.click(canvas.getByRole("button", { name: "Remove job" }));
         await waitFor(() =>
@@ -688,113 +689,110 @@ export const ObjectListSubscriptions: Story = {
 
 //endregion
 
-//region Map keyed stream subscriptions
+//region Map keyed board subscriptions
 
-type Channel = {
+type ProjectBoard = {
   id: string;
   title: string;
-  packets: number;
+  activity: number;
 };
 
-type ChannelStore = {
-  channels: ObservableMap<string, Channel>;
+type ProjectBoardStore = {
+  boards: ObservableMap<string, ProjectBoard>;
 };
 
-type ChannelSubscriptionProps = {
-  store: ChannelStore;
+type BoardSubscriptionProps = {
+  store: ProjectBoardStore;
 };
 
-const initialChannels: [string, Channel][] = [
-  ["rx", { id: "rx", title: "RX channel", packets: 12 }],
-  ["tx", { id: "tx", title: "TX channel", packets: 8 }],
+const initialBoards: [string, ProjectBoard][] = [
+  ["design", { id: "design", title: "Design board", activity: 12 }],
+  ["support", { id: "support", title: "Support board", activity: 8 }],
 ];
 
-class MapKeyedStreamSubscriptionViewModel extends CleanupViewModel<ChannelSubscriptionProps> {
-  activeChannelIds: string[] = [];
+class MapKeyedBoardSubscriptionViewModel extends CleanupViewModel<BoardSubscriptionProps> {
+  activeBoardIds: string[] = [];
   events: string[] = [];
 
-  constructor(props: ChannelSubscriptionProps) {
+  constructor(props: BoardSubscriptionProps) {
     super(props);
     makeObservable(this, {
-      activeChannelIds: observable.shallow,
+      activeBoardIds: observable.shallow,
       events: observable.shallow,
       activeLabel: computed,
-      addChannel: action.bound,
-      updateRx: action.bound,
-      dropBackup: action.bound,
+      addBoard: action.bound,
+      updateDesign: action.bound,
+      dropArchive: action.bound,
     });
   }
 
   init(): void {
     this.disposers.push(
       cleanupReactionMap(
-        () => this.props.store.channels,
-        (channel, key) => {
-          this.activeChannelIds = [...new Set([...this.activeChannelIds, key])];
-          this.events = pushEvent(this.events, `listen ${channel.title}:${channel.packets}`);
+        () => this.props.store.boards,
+        (board, key) => {
+          this.activeBoardIds = [...new Set([...this.activeBoardIds, key])];
+          this.events = pushEvent(this.events, `watch ${board.title}:${board.activity}`);
           return (isModified) => {
-            this.events = pushEvent(
-              this.events,
-              `${isModified ? "refresh" : "drop"} ${channel.id}`,
-            );
+            this.events = pushEvent(this.events, `${isModified ? "refresh" : "drop"} ${board.id}`);
             if (!isModified) {
-              this.activeChannelIds = this.activeChannelIds.filter((id) => id !== key);
+              this.activeBoardIds = this.activeBoardIds.filter((id) => id !== key);
             }
           };
         },
-        { equals: (a, b) => a?.packets === b?.packets && a?.title === b?.title },
+        { equals: (a, b) => a?.activity === b?.activity && a?.title === b?.title },
       ),
     );
   }
 
   get activeLabel(): string {
-    return `Active channels: ${this.activeChannelIds.length}`;
+    return `Active boards: ${this.activeBoardIds.length}`;
   }
 
-  addChannel(): void {
-    this.props.store.channels.set("backup", {
-      id: "backup",
-      title: "Backup channel",
-      packets: 2,
+  addBoard(): void {
+    this.props.store.boards.set("archive", {
+      id: "archive",
+      title: "Archive board",
+      activity: 2,
     });
   }
 
-  updateRx(): void {
-    const rx = this.props.store.channels.get("rx");
-    if (rx) {
-      this.props.store.channels.set("rx", { ...rx, packets: rx.packets + 5 });
+  updateDesign(): void {
+    const design = this.props.store.boards.get("design");
+    if (design) {
+      this.props.store.boards.set("design", { ...design, activity: design.activity + 5 });
     }
   }
 
-  dropBackup(): void {
-    this.props.store.channels.delete("backup");
+  dropArchive(): void {
+    this.props.store.boards.delete("archive");
   }
 }
 
-const MapKeyedStreamSubscriptionsExample = observer(function MapKeyedStreamSubscriptionsExample() {
+const MapKeyedBoardSubscriptionsExample = observer(function MapKeyedBoardSubscriptionsExample() {
   const store = useMemo(
     () =>
-      observable<ChannelStore>({
-        channels: observable.map<string, Channel>(initialChannels),
+      observable<ProjectBoardStore>({
+        boards: observable.map<string, ProjectBoard>(initialBoards),
       }),
     [],
   );
-  const vm = useViewModel(MapKeyedStreamSubscriptionViewModel, { store });
+  const vm = useViewModel(MapKeyedBoardSubscriptionViewModel, { store });
 
   return (
-    <StoryCard title="Map keyed stream subscriptions">
+    <StoryCard title="Map keyed board subscriptions">
       <div style={rowStyle}>
-        <button style={buttonStyle} type="button" onClick={vm.addChannel}>
-          Add channel
+        <button style={buttonStyle} type="button" onClick={vm.addBoard}>
+          Add board
         </button>
-        <button style={buttonStyle} type="button" onClick={vm.updateRx}>
-          Update RX
+        <button style={buttonStyle} type="button" onClick={vm.updateDesign}>
+          Update design
         </button>
-        <button style={buttonStyle} type="button" onClick={vm.dropBackup}>
-          Drop backup
+        <button style={buttonStyle} type="button" onClick={vm.dropArchive}>
+          Drop archive
         </button>
       </div>
-      <span data-testid="active-channels" style={metricStyle}>
+      <span data-testid="active-boards" style={metricStyle}>
         {vm.activeLabel}
       </span>
       <EventList items={vm.events} />
@@ -802,64 +800,64 @@ const MapKeyedStreamSubscriptionsExample = observer(function MapKeyedStreamSubsc
   );
 });
 
-const mapKeyedStreamSubscriptionsSource = `
-class MapKeyedStreamSubscriptionViewModel extends CleanupViewModel<{ store: ChannelStore }> {
-  activeChannelIds: string[] = [];
+const mapKeyedBoardSubscriptionsSource = `
+class MapKeyedBoardSubscriptionViewModel extends CleanupViewModel<{ store: ProjectBoardStore }> {
+  activeBoardIds: string[] = [];
   events: string[] = [];
 
-  constructor(props: { store: ChannelStore }) {
+  constructor(props: { store: ProjectBoardStore }) {
     super(props);
     makeObservable(this, {
-      activeChannelIds: observable.shallow,
+      activeBoardIds: observable.shallow,
       events: observable.shallow,
       activeLabel: computed,
-      addChannel: action.bound,
-      updateRx: action.bound,
-      dropBackup: action.bound,
+      addBoard: action.bound,
+      updateDesign: action.bound,
+      dropArchive: action.bound,
     });
   }
 
   init() {
     this.disposers.push(
       cleanupReactionMap(
-        () => this.props.store.channels,
-        (channel, key) => {
-          this.activeChannelIds = [...new Set([...this.activeChannelIds, key])];
-          this.events = [\`listen \${channel.title}:\${channel.packets}\`, ...this.events].slice(0, 6);
+        () => this.props.store.boards,
+        (board, key) => {
+          this.activeBoardIds = [...new Set([...this.activeBoardIds, key])];
+          this.events = [\`watch \${board.title}:\${board.activity}\`, ...this.events].slice(0, 6);
           return (isModified) => {
             this.events = [
-              \`\${isModified ? "refresh" : "drop"} \${channel.id}\`,
+              \`\${isModified ? "refresh" : "drop"} \${board.id}\`,
               ...this.events,
             ].slice(0, 6);
             if (!isModified) {
-              this.activeChannelIds = this.activeChannelIds.filter((id) => id !== key);
+              this.activeBoardIds = this.activeBoardIds.filter((id) => id !== key);
             }
           };
         },
-        { equals: (a, b) => a?.packets === b?.packets && a?.title === b?.title },
+        { equals: (a, b) => a?.activity === b?.activity && a?.title === b?.title },
       ),
     );
   }
 
   get activeLabel() {
-    return \`Active channels: \${this.activeChannelIds.length}\`;
+    return \`Active boards: \${this.activeBoardIds.length}\`;
   }
 }
 
 const Example = observer(function Example() {
   const store = useMemo(() => observable({
-    channels: observable.map([
-      ["rx", { id: "rx", title: "RX channel", packets: 12 }],
-      ["tx", { id: "tx", title: "TX channel", packets: 8 }],
+    boards: observable.map([
+      ["design", { id: "design", title: "Design board", activity: 12 }],
+      ["support", { id: "support", title: "Support board", activity: 8 }],
     ]),
   }), []);
-  const vm = useViewModel(MapKeyedStreamSubscriptionViewModel, { store });
+  const vm = useViewModel(MapKeyedBoardSubscriptionViewModel, { store });
 
   return (
     <section>
-      <button onClick={vm.addChannel}>Add channel</button>
-      <button onClick={vm.updateRx}>Update RX</button>
-      <button onClick={vm.dropBackup}>Drop backup</button>
+      <button onClick={vm.addBoard}>Add board</button>
+      <button onClick={vm.updateDesign}>Update design</button>
+      <button onClick={vm.dropArchive}>Drop archive</button>
       <span>{vm.activeLabel}</span>
       <ol>{vm.events.map((event) => <li key={event}>{event}</li>)}</ol>
     </section>
@@ -867,28 +865,28 @@ const Example = observer(function Example() {
 });
 `;
 
-export const MapKeyedStreamSubscriptions: Story = {
+export const MapKeyedBoardSubscriptions: Story = {
   render: () => (
     <StoryExample>
-      <MapKeyedStreamSubscriptionsExample />
+      <MapKeyedBoardSubscriptionsExample />
     </StoryExample>
   ),
-  parameters: cleanupMobxStorySource(mapKeyedStreamSubscriptionsSource),
+  parameters: cleanupMobxStorySource(mapKeyedBoardSubscriptionsSource),
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
     await step(
       "tracks map entries by key and refreshes changed values inside the view model",
       async () => {
-        await userEvent.click(canvas.getByRole("button", { name: "Add channel" }));
+        await userEvent.click(canvas.getByRole("button", { name: "Add board" }));
         await waitFor(() =>
-          expect(canvas.getByTestId("active-channels")).toHaveTextContent("Active channels: 3"),
+          expect(canvas.getByTestId("active-boards")).toHaveTextContent("Active boards: 3"),
         );
-        await userEvent.click(canvas.getByRole("button", { name: "Update RX" }));
-        await waitFor(() => expect(canvas.getByText("refresh rx")).toBeInTheDocument());
-        await userEvent.click(canvas.getByRole("button", { name: "Drop backup" }));
+        await userEvent.click(canvas.getByRole("button", { name: "Update design" }));
+        await waitFor(() => expect(canvas.getByText("refresh design")).toBeInTheDocument());
+        await userEvent.click(canvas.getByRole("button", { name: "Drop archive" }));
         await waitFor(() =>
-          expect(canvas.getByTestId("active-channels")).toHaveTextContent("Active channels: 2"),
+          expect(canvas.getByTestId("active-boards")).toHaveTextContent("Active boards: 2"),
         );
       },
     );
@@ -913,7 +911,7 @@ type PrimitiveSetProps = {
   preferenceStore: PreferenceStore;
 };
 
-const initialTags = ["decoder", "timing", "telemetry"];
+const initialTags = ["billing", "security", "analytics"];
 
 class PrimitiveSetAndAutorunSettingsViewModel extends CleanupViewModel<PrimitiveSetProps> {
   activeTags: string[] = [];
@@ -931,7 +929,7 @@ class PrimitiveSetAndAutorunSettingsViewModel extends CleanupViewModel<Primitive
       activeTagsLabel: computed,
       combinedEvents: computed,
       addTag: action.bound,
-      removeDecoder: action.bound,
+      removeBilling: action.bound,
       cycleMode: action.bound,
     });
   }
@@ -980,11 +978,11 @@ class PrimitiveSetAndAutorunSettingsViewModel extends CleanupViewModel<Primitive
   }
 
   addTag(): void {
-    this.props.tagStore.tags.add("handover");
+    this.props.tagStore.tags.add("support");
   }
 
-  removeDecoder(): void {
-    this.props.tagStore.tags.delete("decoder");
+  removeBilling(): void {
+    this.props.tagStore.tags.delete("billing");
   }
 
   cycleMode(): void {
@@ -1021,8 +1019,8 @@ const PrimitiveSetAndAutorunSettingsExample = observer(
           <button style={buttonStyle} type="button" onClick={vm.addTag}>
             Add tag
           </button>
-          <button style={buttonStyle} type="button" onClick={vm.removeDecoder}>
-            Remove decoder
+          <button style={buttonStyle} type="button" onClick={vm.removeBilling}>
+            Remove billing
           </button>
           <button style={buttonStyle} type="button" onClick={vm.cycleMode}>
             Cycle mode
@@ -1057,7 +1055,7 @@ class PrimitiveSetAndAutorunSettingsViewModel extends CleanupViewModel<Primitive
       activeTagsLabel: computed,
       combinedEvents: computed,
       addTag: action.bound,
-      removeDecoder: action.bound,
+      removeBilling: action.bound,
       cycleMode: action.bound,
     });
   }
@@ -1103,7 +1101,7 @@ class PrimitiveSetAndAutorunSettingsViewModel extends CleanupViewModel<Primitive
 }
 
 const Example = observer(function Example() {
-  const tagStore = useMemo(() => observable({ tags: new Set(["decoder", "timing", "telemetry"]) }), []);
+  const tagStore = useMemo(() => observable({ tags: new Set(["billing", "security", "analytics"]) }), []);
   const preferenceStore = useMemo(() => observable({ mode: "Desk", volume: 35 }), []);
   const vm = useViewModel(PrimitiveSetAndAutorunSettingsViewModel, {
     tagStore,
@@ -1113,7 +1111,7 @@ const Example = observer(function Example() {
   return (
     <section>
       <button onClick={vm.addTag}>Add tag</button>
-      <button onClick={vm.removeDecoder}>Remove decoder</button>
+      <button onClick={vm.removeBilling}>Remove billing</button>
       <button onClick={vm.cycleMode}>Cycle mode</button>
       <span>{vm.activeTagsLabel}</span>
       <span>{vm.preferenceSummary}</span>
@@ -1140,7 +1138,7 @@ export const PrimitiveSetAndAutorunSettings: Story = {
         await waitFor(() =>
           expect(canvas.getByTestId("active-tags")).toHaveTextContent("Active tags: 4"),
         );
-        await userEvent.click(canvas.getByRole("button", { name: "Remove decoder" }));
+        await userEvent.click(canvas.getByRole("button", { name: "Remove billing" }));
         await waitFor(() =>
           expect(canvas.getByTestId("active-tags")).toHaveTextContent("Active tags: 3"),
         );
@@ -1155,18 +1153,18 @@ export const PrimitiveSetAndAutorunSettings: Story = {
 
 //region Canvas ref lifecycle
 
-type CanvasTelemetryProps = {
+type CanvasDashboardProps = {
   running: boolean;
-  tone: "cyan" | "amber";
+  theme: "blue" | "gold";
 };
 
-class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
+class CanvasDashboardViewModel extends CleanupViewModel<CanvasDashboardProps> {
   frames = 0;
   pointer = "outside";
   private disposeFrame: Disposer | null = null;
 
   constructor(
-    props: CanvasTelemetryProps,
+    props: CanvasDashboardProps,
     private canvasRef: RefObject<HTMLCanvasElement | null>,
   ) {
     super(props);
@@ -1191,7 +1189,7 @@ class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
 
     this.disposers.push(
       cleanupReaction(
-        () => ({ running: this.props.running, tone: this.props.tone }),
+        () => ({ running: this.props.running, theme: this.props.theme }),
         ({ running }) => {
           this.scheduleDraw();
           if (!running) {
@@ -1235,9 +1233,9 @@ class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
     canvas.height = Math.round(height * dpr);
     context.scale(dpr, dpr);
     context.clearRect(0, 0, width, height);
-    context.fillStyle = this.props.tone === "cyan" ? "#d9f7f4" : "#fff4d6";
+    context.fillStyle = this.props.theme === "blue" ? "#e0f2fe" : "#fff4d6";
     context.fillRect(0, 0, width, height);
-    context.fillStyle = this.props.tone === "cyan" ? "#08766f" : "#8a4b00";
+    context.fillStyle = this.props.theme === "blue" ? "#0369a1" : "#8a4b00";
     context.fillRect(12, 12, Math.min(width - 24, 24 + this.frames * 8), 18);
     context.fillStyle = "#17202a";
     context.font = "13px system-ui";
@@ -1253,9 +1251,9 @@ class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
 
 const CanvasRefLifecycleExample = observer(function CanvasRefLifecycleExample() {
   const [running, setRunning] = useState(false);
-  const [tone, setTone] = useState<CanvasTelemetryProps["tone"]>("cyan");
+  const [theme, setTheme] = useState<CanvasDashboardProps["theme"]>("blue");
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const vm = useViewModel(CanvasTelemetryViewModel, { running, tone }, [canvasRef]);
+  const vm = useViewModel(CanvasDashboardViewModel, { running, theme }, [canvasRef]);
 
   return (
     <StoryCard title="Canvas ref lifecycle">
@@ -1266,9 +1264,9 @@ const CanvasRefLifecycleExample = observer(function CanvasRefLifecycleExample() 
         <button
           style={buttonStyle}
           type="button"
-          onClick={() => setTone((value) => (value === "cyan" ? "amber" : "cyan"))}
+          onClick={() => setTheme((value) => (value === "blue" ? "gold" : "blue"))}
         >
-          Toggle tone
+          Toggle theme
         </button>
       </div>
       <canvas
@@ -1288,13 +1286,13 @@ const CanvasRefLifecycleExample = observer(function CanvasRefLifecycleExample() 
 });
 
 const canvasRefLifecycleSource = `
-class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
+class CanvasDashboardViewModel extends CleanupViewModel<CanvasDashboardProps> {
   frames = 0;
   pointer = "outside";
   private disposeFrame: (() => void) | null = null;
 
   constructor(
-    props: CanvasTelemetryProps,
+    props: CanvasDashboardProps,
     private canvasRef: RefObject<HTMLCanvasElement | null>,
   ) {
     super(props);
@@ -1319,7 +1317,7 @@ class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
 
     this.disposers.push(
       cleanupReaction(
-        () => ({ running: this.props.running, tone: this.props.tone }),
+        () => ({ running: this.props.running, theme: this.props.theme }),
         ({ running }) => {
           this.scheduleDraw();
           if (!running) return;
@@ -1350,17 +1348,17 @@ class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
 
 const Example = observer(function Example() {
   const [running, setRunning] = useState(false);
-  const [tone, setTone] = useState<"cyan" | "amber">("cyan");
+  const [theme, setTheme] = useState<"blue" | "gold">("blue");
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const vm = useViewModel(CanvasTelemetryViewModel, { running, tone }, [canvasRef]);
+  const vm = useViewModel(CanvasDashboardViewModel, { running, theme }, [canvasRef]);
 
   return (
     <section>
       <button onClick={() => setRunning((value) => !value)}>
         {running ? "Pause" : "Run"}
       </button>
-      <button onClick={() => setTone((value) => (value === "cyan" ? "amber" : "cyan"))}>
-        Toggle tone
+      <button onClick={() => setTheme((value) => (value === "blue" ? "gold" : "blue"))}>
+        Toggle theme
       </button>
       <canvas ref={canvasRef} />
       <span>{vm.status}</span>
@@ -1392,23 +1390,23 @@ export const CanvasRefLifecycle: Story = {
 
 //endregion
 
-//region Factory stable client
+//region Factory stable project client
 
-type FeedClientProps = {
-  channel: "alpha" | "beta";
+type ProjectClientProps = {
+  workspace: "planning" | "delivery";
 };
 
-class StableFeedClientViewModel extends CleanupViewModel<FeedClientProps> {
-  packets = 0;
+class StableProjectClientViewModel extends CleanupViewModel<ProjectClientProps> {
+  updates = 0;
   events: string[] = [];
 
   constructor(
-    props: FeedClientProps,
+    props: ProjectClientProps,
     private readonly clientId: string,
   ) {
     super(props);
     makeObservable(this, {
-      packets: observable,
+      updates: observable,
       events: observable.shallow,
       label: computed,
     });
@@ -1417,12 +1415,12 @@ class StableFeedClientViewModel extends CleanupViewModel<FeedClientProps> {
   init(): void {
     this.disposers.push(
       cleanupReaction(
-        () => this.props.channel,
-        (channel) => {
-          this.events = pushEvent(this.events, `connect ${this.clientId}:${channel}`);
+        () => this.props.workspace,
+        (workspace) => {
+          this.events = pushEvent(this.events, `connect ${this.clientId}:${workspace}`);
           return cleanupInterval(() => {
             runInAction(() => {
-              this.packets += channel === "alpha" ? 1 : 2;
+              this.updates += workspace === "planning" ? 1 : 2;
             });
           }, "220ms");
         },
@@ -1431,16 +1429,16 @@ class StableFeedClientViewModel extends CleanupViewModel<FeedClientProps> {
   }
 
   get label(): string {
-    return `${this.clientId}:${this.props.channel} packets ${this.packets}`;
+    return `${this.clientId}:${this.props.workspace} updates ${this.updates}`;
   }
 }
 
 const FactoryStableClientExample = observer(function FactoryStableClientExample() {
-  const [channel, setChannel] = useState<FeedClientProps["channel"]>("alpha");
+  const [workspace, setWorkspace] = useState<ProjectClientProps["workspace"]>("planning");
   const vm = useViewModelFactory(
-    (props?: FeedClientProps) =>
-      new StableFeedClientViewModel(props ?? { channel: "alpha" }, "waterfall-feed"),
-    { channel },
+    (props?: ProjectClientProps) =>
+      new StableProjectClientViewModel(props ?? { workspace: "planning" }, "project-sync"),
+    { workspace },
   );
 
   return (
@@ -1449,12 +1447,12 @@ const FactoryStableClientExample = observer(function FactoryStableClientExample(
         <button
           style={buttonStyle}
           type="button"
-          onClick={() => setChannel((value) => (value === "alpha" ? "beta" : "alpha"))}
+          onClick={() => setWorkspace((value) => (value === "planning" ? "delivery" : "planning"))}
         >
-          Switch channel
+          Switch workspace
         </button>
       </div>
-      <span data-testid="feed-client-label" style={metricStyle}>
+      <span data-testid="project-client-label" style={metricStyle}>
         {vm.label}
       </span>
       <EventList items={vm.events} />
@@ -1463,17 +1461,17 @@ const FactoryStableClientExample = observer(function FactoryStableClientExample(
 });
 
 const factoryStableClientSource = `
-class StableFeedClientViewModel extends CleanupViewModel<{ channel: "alpha" | "beta" }> {
-  packets = 0;
+class StableProjectClientViewModel extends CleanupViewModel<{ workspace: "planning" | "delivery" }> {
+  updates = 0;
   events: string[] = [];
 
   constructor(
-    props: { channel: "alpha" | "beta" },
+    props: { workspace: "planning" | "delivery" },
     private readonly clientId: string,
   ) {
     super(props);
     makeObservable(this, {
-      packets: observable,
+      updates: observable,
       events: observable.shallow,
       label: computed,
     });
@@ -1482,12 +1480,12 @@ class StableFeedClientViewModel extends CleanupViewModel<{ channel: "alpha" | "b
   init() {
     this.disposers.push(
       cleanupReaction(
-        () => this.props.channel,
-        (channel) => {
-          this.events = [\`connect \${this.clientId}:\${channel}\`, ...this.events].slice(0, 6);
+        () => this.props.workspace,
+        (workspace) => {
+          this.events = [\`connect \${this.clientId}:\${workspace}\`, ...this.events].slice(0, 6);
           return cleanupInterval(() => {
             runInAction(() => {
-              this.packets += channel === "alpha" ? 1 : 2;
+              this.updates += workspace === "planning" ? 1 : 2;
             });
           }, "220ms");
         },
@@ -1496,21 +1494,21 @@ class StableFeedClientViewModel extends CleanupViewModel<{ channel: "alpha" | "b
   }
 
   get label() {
-    return \`\${this.clientId}:\${this.props.channel} packets \${this.packets}\`;
+    return \`\${this.clientId}:\${this.props.workspace} updates \${this.updates}\`;
   }
 }
 
 const Example = observer(function Example() {
-  const [channel, setChannel] = useState<"alpha" | "beta">("alpha");
+  const [workspace, setWorkspace] = useState<"planning" | "delivery">("planning");
   const vm = useViewModelFactory(
-    (props) => new StableFeedClientViewModel(props ?? { channel: "alpha" }, "waterfall-feed"),
-    { channel },
+    (props) => new StableProjectClientViewModel(props ?? { workspace: "planning" }, "project-sync"),
+    { workspace },
   );
 
   return (
     <section>
-      <button onClick={() => setChannel((value) => (value === "alpha" ? "beta" : "alpha"))}>
-        Switch channel
+      <button onClick={() => setWorkspace((value) => (value === "planning" ? "delivery" : "planning"))}>
+        Switch workspace
       </button>
       <span>{vm.label}</span>
       <ol>{vm.events.map((event) => <li key={event}>{event}</li>)}</ol>
@@ -1529,15 +1527,22 @@ export const FactoryStableClient: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    await step("keeps the factory-created client while replacing the channel effect", async () => {
-      await waitFor(() =>
-        expect(canvas.getByTestId("feed-client-label")).toHaveTextContent(/alpha packets [1-9]/),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Switch channel" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("feed-client-label")).toHaveTextContent("waterfall-feed:beta"),
-      );
-    });
+    await step(
+      "keeps the factory-created client while replacing the workspace effect",
+      async () => {
+        await waitFor(() =>
+          expect(canvas.getByTestId("project-client-label")).toHaveTextContent(
+            /planning updates [1-9]/,
+          ),
+        );
+        await userEvent.click(canvas.getByRole("button", { name: "Switch workspace" }));
+        await waitFor(() =>
+          expect(canvas.getByTestId("project-client-label")).toHaveTextContent(
+            "project-sync:delivery",
+          ),
+        );
+      },
+    );
   },
 };
 

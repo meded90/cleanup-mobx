@@ -1,4 +1,4 @@
-import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 
 import { logAndAction } from "../../.storybook/utils/logAndAction";
@@ -22,7 +22,7 @@ type SearchItem = {
   group: string;
 };
 
-type FeedProfile = {
+type ProjectProfile = {
   id: string;
   title: string;
   latencyMs: number;
@@ -99,11 +99,11 @@ function LogList(props: { items: string[] }) {
 //region Debounced command search
 
 const searchCatalog: SearchItem[] = [
-  { id: "rx-1", label: "Ion drift alert", group: "Space weather" },
-  { id: "rx-2", label: "Decoder warm start", group: "Decoder" },
-  { id: "tx-1", label: "Tower handover", group: "Tower" },
-  { id: "pa-1", label: "PA cooldown window", group: "Power" },
-  { id: "rx-3", label: "Propagation ionogram", group: "Space weather" },
+  { id: "todo-1", label: "Review overdue todos", group: "Todo" },
+  { id: "todo-2", label: "Archive completed todos", group: "Todo" },
+  { id: "user-1", label: "Invite new user", group: "Users" },
+  { id: "user-2", label: "Reset user password", group: "Users" },
+  { id: "report-1", label: "Export weekly report", group: "Reports" },
 ];
 
 function DebouncedCommandSearchExample() {
@@ -135,7 +135,7 @@ function DebouncedCommandSearchExample() {
         aria-label="Search commands"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Type ion"
+        placeholder="Type todo"
         style={{ padding: 8, border: "1px solid #b8c4d2", borderRadius: 6 }}
       />
       <span data-testid="search-status" style={metricStyle}>
@@ -154,11 +154,11 @@ function DebouncedCommandSearchExample() {
 
 const debouncedCommandSearchSource = `
 const searchCatalog = [
-  { id: "rx-1", label: "Ion drift alert", group: "Space weather" },
-  { id: "rx-2", label: "Decoder warm start", group: "Decoder" },
-  { id: "tx-1", label: "Tower handover", group: "Tower" },
-  { id: "pa-1", label: "PA cooldown window", group: "Power" },
-  { id: "rx-3", label: "Propagation ionogram", group: "Space weather" },
+  { id: "todo-1", label: "Review overdue todos", group: "Todo" },
+  { id: "todo-2", label: "Archive completed todos", group: "Todo" },
+  { id: "user-1", label: "Invite new user", group: "Users" },
+  { id: "user-2", label: "Reset user password", group: "Users" },
+  { id: "report-1", label: "Export weekly report", group: "Reports" },
 ];
 
 function DebouncedCommandSearchExample() {
@@ -219,140 +219,140 @@ export const DebouncedCommandSearch: Story = {
     await step("cleans previous timeout and applies the last query", async () => {
       const input = canvas.getByLabelText("Search commands");
       await userEvent.clear(input);
-      await userEvent.type(input, "ion");
+      await userEvent.type(input, "todo");
       await expect(canvas.getByTestId("search-status")).toHaveTextContent("Debouncing input");
       await waitFor(() =>
-        expect(canvas.getByTestId("search-status")).toHaveTextContent('Applied "ion"'),
+        expect(canvas.getByTestId("search-status")).toHaveTextContent('Applied "todo"'),
       );
-      await expect(canvas.getByTestId("search-results")).toHaveTextContent("Ion drift alert");
+      await expect(canvas.getByTestId("search-results")).toHaveTextContent("Review overdue todos");
     });
   },
 };
 
 //endregion
 
-//region Switchable telemetry interval
+//region Switchable project sync interval
 
-const feedProfiles: FeedProfile[] = [
-  { id: "alpha", title: "Alpha telemetry", latencyMs: 90 },
-  { id: "beta", title: "Beta telemetry", latencyMs: 140 },
+const projectProfiles: ProjectProfile[] = [
+  { id: "design", title: "Design project", latencyMs: 90 },
+  { id: "billing", title: "Billing project", latencyMs: 140 },
 ];
 
-const fallbackFeedProfile: FeedProfile = {
+const fallbackProjectProfile: ProjectProfile = {
   id: "fallback",
-  title: "Fallback telemetry",
+  title: "Fallback project",
   latencyMs: 120,
 };
 
-function getFeedProfile(index: number): FeedProfile {
-  return feedProfiles[index] ?? fallbackFeedProfile;
+function getProjectProfile(index: number): ProjectProfile {
+  return projectProfiles[index] ?? fallbackProjectProfile;
 }
 
-function SwitchableTelemetryIntervalExample() {
-  const [feedRunning, setFeedRunning] = useState(false);
-  const [feedIndex, setFeedIndex] = useState(0);
-  const [feedTick, setFeedTick] = useState(0);
-  const [feedLog, setFeedLog] = useState<string[]>([]);
+function SwitchableProjectSyncIntervalExample() {
+  const [syncRunning, setSyncRunning] = useState(false);
+  const [projectIndex, setProjectIndex] = useState(0);
+  const [syncUpdates, setSyncUpdates] = useState(0);
+  const [syncLog, setSyncLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!feedRunning) {
+    if (!syncRunning) {
       return;
     }
 
-    const profile = getFeedProfile(feedIndex);
-    pushLog(setFeedLog, `opened ${profile.title}`);
+    const profile = getProjectProfile(projectIndex);
+    pushLog(setSyncLog, `opened ${profile.title}`);
 
     return cleanupInterval(() => {
-      setFeedTick((value) => value + 1);
-      pushLog(setFeedLog, `packet from ${profile.id} after ${profile.latencyMs}ms`);
+      setSyncUpdates((value) => value + 1);
+      pushLog(setSyncLog, `update from ${profile.id} after ${profile.latencyMs}ms`);
     }, "180ms");
-  }, [feedIndex, feedRunning]);
+  }, [projectIndex, syncRunning]);
 
-  const activeFeedProfile = getFeedProfile(feedIndex);
+  const activeProjectProfile = getProjectProfile(projectIndex);
 
   return (
     <section style={exampleStyle}>
-      <h3 style={titleStyle}>Switchable telemetry interval</h3>
+      <h3 style={titleStyle}>Switchable project sync interval</h3>
       <div style={rowStyle}>
-        <button style={buttonStyle} type="button" onClick={() => setFeedRunning((value) => !value)}>
-          {feedRunning ? "Stop feed" : "Start feed"}
+        <button style={buttonStyle} type="button" onClick={() => setSyncRunning((value) => !value)}>
+          {syncRunning ? "Stop sync" : "Start sync"}
         </button>
         <button
           style={buttonStyle}
           type="button"
-          onClick={() => setFeedIndex((value) => (value + 1) % 2)}
+          onClick={() => setProjectIndex((value) => (value + 1) % 2)}
         >
-          Switch channel
+          Switch project
         </button>
       </div>
-      <span data-testid="feed-channel" style={metricStyle}>
-        {activeFeedProfile.title}
+      <span data-testid="project-name" style={metricStyle}>
+        {activeProjectProfile.title}
       </span>
-      <span data-testid="feed-ticks">Packets: {feedTick}</span>
-      <LogList items={feedLog} />
+      <span data-testid="sync-updates">Updates: {syncUpdates}</span>
+      <LogList items={syncLog} />
     </section>
   );
 }
 
-const switchableTelemetryIntervalSource = `
-const feedProfiles = [
-  { id: "alpha", title: "Alpha telemetry", latencyMs: 90 },
-  { id: "beta", title: "Beta telemetry", latencyMs: 140 },
+const switchableProjectSyncIntervalSource = `
+const projectProfiles = [
+  { id: "design", title: "Design project", latencyMs: 90 },
+  { id: "billing", title: "Billing project", latencyMs: 140 },
 ];
 
-function SwitchableTelemetryIntervalExample() {
-  const [feedRunning, setFeedRunning] = useState(false);
-  const [feedIndex, setFeedIndex] = useState(0);
-  const [feedTick, setFeedTick] = useState(0);
-  const [feedLog, setFeedLog] = useState<string[]>([]);
+function SwitchableProjectSyncIntervalExample() {
+  const [syncRunning, setSyncRunning] = useState(false);
+  const [projectIndex, setProjectIndex] = useState(0);
+  const [syncUpdates, setSyncUpdates] = useState(0);
+  const [syncLog, setSyncLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!feedRunning) {
+    if (!syncRunning) {
       return;
     }
 
-    const profile = feedProfiles[feedIndex];
-    pushLog(setFeedLog, "opened " + profile.title);
+    const profile = projectProfiles[projectIndex];
+    pushLog(setSyncLog, "opened " + profile.title);
 
     return cleanupInterval(() => {
-      setFeedTick((value) => value + 1);
-      pushLog(setFeedLog, "packet from " + profile.id);
+      setSyncUpdates((value) => value + 1);
+      pushLog(setSyncLog, "update from " + profile.id);
     }, "180ms");
-  }, [feedIndex, feedRunning]);
+  }, [projectIndex, syncRunning]);
 
   return (
     <section>
-      <button type="button" onClick={() => setFeedRunning((value) => !value)}>
-        {feedRunning ? "Stop feed" : "Start feed"}
+      <button type="button" onClick={() => setSyncRunning((value) => !value)}>
+        {syncRunning ? "Stop sync" : "Start sync"}
       </button>
-      <button type="button" onClick={() => setFeedIndex((value) => (value + 1) % 2)}>
-        Switch channel
+      <button type="button" onClick={() => setProjectIndex((value) => (value + 1) % 2)}>
+        Switch project
       </button>
-      <span>Packets: {feedTick}</span>
-      <LogList items={feedLog} />
+      <span>Updates: {syncUpdates}</span>
+      <LogList items={syncLog} />
     </section>
   );
 }
 `;
 
-export const SwitchableTelemetryInterval: Story = {
+export const SwitchableProjectSyncInterval: Story = {
   render: () => (
     <StoryExample>
-      <SwitchableTelemetryIntervalExample />
+      <SwitchableProjectSyncIntervalExample />
     </StoryExample>
   ),
-  parameters: storySource(switchableTelemetryIntervalSource),
+  parameters: storySource(switchableProjectSyncIntervalSource),
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
     await step("starts, switches and stops without duplicate timers", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Start feed" }));
+      await userEvent.click(canvas.getByRole("button", { name: "Start sync" }));
       await waitFor(() =>
-        expect(canvas.getByTestId("feed-ticks")).not.toHaveTextContent("Packets: 0"),
+        expect(canvas.getByTestId("sync-updates")).not.toHaveTextContent("Updates: 0"),
       );
-      await userEvent.click(canvas.getByRole("button", { name: "Switch channel" }));
-      await expect(canvas.getByTestId("feed-channel")).toHaveTextContent("Beta telemetry");
-      await userEvent.click(canvas.getByRole("button", { name: "Stop feed" }));
+      await userEvent.click(canvas.getByRole("button", { name: "Switch project" }));
+      await expect(canvas.getByTestId("project-name")).toHaveTextContent("Billing project");
+      await userEvent.click(canvas.getByRole("button", { name: "Stop sync" }));
     });
   },
 };
@@ -498,10 +498,10 @@ export const RequestAnimationFrameProgress: Story = {
 //region Idle staged preload
 
 const idleTiles = [
-  "Map tiles",
-  "Decoder hints",
-  "Audio presets",
-  "Timeline rows",
+  "User avatars",
+  "Todo templates",
+  "Saved filters",
+  "Dashboard rows",
   "Command palette",
 ];
 
@@ -574,10 +574,10 @@ function IdleStagedPreloadExample() {
 
 const idleStagedPreloadSource = `
 const idleTiles = [
-  "Map tiles",
-  "Decoder hints",
-  "Audio presets",
-  "Timeline rows",
+  "User avatars",
+  "Todo templates",
+  "Saved filters",
+  "Dashboard rows",
   "Command palette",
 ];
 
