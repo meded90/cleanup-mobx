@@ -72,6 +72,8 @@
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.1.1",
     "mobx": "^6.15.2",
+    "mobx-react": "9.2.2",
+    "mobx-react-viewmodel": "0.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "storybook": "^10.4.0",

@@ -9,7 +9,6 @@ import {
   cleanupEventListener,
   cleanupIdleCallback,
   cleanupInterval,
-  cleanupReaction,
   cleanupReactionList,
   cleanupReactionMap,
   cleanupReactionPrimitiveList,
@@ -204,6 +203,14 @@ function DebouncedCommandSearchExample() {
 }
 
 const debouncedCommandSearchSource = `
+const searchCatalog = [
+  { id: "rx-1", label: "Ion drift alert", group: "Space weather" },
+  { id: "rx-2", label: "Decoder warm start", group: "Decoder" },
+  { id: "tx-1", label: "Tower handover", group: "Tower" },
+  { id: "pa-1", label: "PA cooldown window", group: "Power" },
+  { id: "rx-3", label: "Propagation ionogram", group: "Space weather" },
+];
+
 function DebouncedCommandSearchExample() {
   const [query, setQuery] = useState("");
   const [searchStatus, setSearchStatus] = useState("Idle");
@@ -287,6 +294,11 @@ function SwitchableTelemetryIntervalExample() {
 }
 
 const switchableTelemetryIntervalSource = `
+const feedProfiles = [
+  { id: "alpha", title: "Alpha telemetry", latencyMs: 90 },
+  { id: "beta", title: "Beta telemetry", latencyMs: 140 },
+];
+
 function SwitchableTelemetryIntervalExample() {
   const [feedRunning, setFeedRunning] = useState(false);
   const [feedIndex, setFeedIndex] = useState(0);
@@ -502,6 +514,14 @@ function IdleStagedPreloadExample() {
 }
 
 const idleStagedPreloadSource = `
+const idleTiles = [
+  "Map tiles",
+  "Decoder hints",
+  "Audio presets",
+  "Timeline rows",
+  "Command palette",
+];
+
 function IdleStagedPreloadExample() {
   const [loadedTiles, setLoadedTiles] = useState<string[]>([]);
   const [idleStatus, setIdleStatus] = useState("Not queued");
@@ -705,89 +725,6 @@ function WindowDocumentAndSelectorListenersExample() {
 }
 `;
 
-function ScalarMobxResourceReplacementExample() {
-  const scalarStore = useMemo(
-    () =>
-      observable({
-        link: "RX",
-        load: 24,
-        warning: false,
-      }),
-    [],
-  );
-  const [scalarSnapshot, setScalarSnapshot] = useState("RX:24:normal");
-  const [scalarLog, setScalarLog] = useState<string[]>([]);
-
-  useEffect(() => {
-    return cleanupReaction(
-      () => `${scalarStore.link}:${scalarStore.load}:${scalarStore.warning ? "warning" : "normal"}`,
-      (summary) => {
-        setScalarSnapshot(summary);
-        pushLog(setScalarLog, `subscribed ${summary}`);
-        return () => pushLog(setScalarLog, `closed ${summary}`);
-      },
-    );
-  }, [scalarStore]);
-
-  return (
-    <section style={exampleStyle}>
-      <h3 style={titleStyle}>Scalar MobX resource replacement</h3>
-      <div style={rowStyle}>
-        <button
-          style={buttonStyle}
-          type="button"
-          onClick={() =>
-            runInAction(() => {
-              scalarStore.load += 17;
-              scalarStore.warning = scalarStore.load > 50;
-            })
-          }
-        >
-          Increase load
-        </button>
-        <button
-          style={buttonStyle}
-          type="button"
-          onClick={() =>
-            runInAction(() => {
-              scalarStore.link = scalarStore.link === "RX" ? "TX" : "RX";
-            })
-          }
-        >
-          Toggle link
-        </button>
-      </div>
-      <span data-testid="scalar-snapshot" style={metricStyle}>
-        {scalarSnapshot}
-      </span>
-      <LogList items={scalarLog} />
-    </section>
-  );
-}
-
-const scalarMobxResourceReplacementSource = `
-function ScalarMobxResourceReplacementExample() {
-  const store = useMemo(() => observable({
-    link: "RX",
-    load: 24,
-    warning: false,
-  }), []);
-  const [snapshot, setSnapshot] = useState("RX:24:normal");
-  const [events, setEvents] = useState<string[]>([]);
-
-  useEffect(() => {
-    return cleanupReaction(
-      () => store.link + ":" + store.load + ":" + (store.warning ? "warning" : "normal"),
-      (summary) => {
-        setSnapshot(summary);
-        pushLog(setEvents, "subscribed " + summary);
-        return () => pushLog(setEvents, "closed " + summary);
-      },
-    );
-  }, [store]);
-}
-`;
-
 function ObjectListSubscriptionsExample() {
   const jobStore = useMemo(
     () =>
@@ -870,6 +807,11 @@ function ObjectListSubscriptionsExample() {
 }
 
 const objectListSubscriptionsSource = `
+const initialJobs = [
+  { id: 1, title: "Warm decoder", state: "queued" },
+  { id: 2, title: "Open tower stream", state: "running" },
+];
+
 function ObjectListSubscriptionsExample() {
   const store = useMemo(() => observable({ jobs: [...initialJobs] }), []);
   const [activeJobs, setActiveJobs] = useState<number[]>([]);
@@ -977,6 +919,11 @@ function MapKeyedStreamSubscriptionsExample() {
 }
 
 const mapKeyedStreamSubscriptionsSource = `
+const initialChannels = [
+  ["rx", { id: "rx", title: "RX channel", packets: 12 }],
+  ["tx", { id: "tx", title: "TX channel", packets: 8 }],
+];
+
 function MapKeyedStreamSubscriptionsExample() {
   const store = useMemo(() => observable({
     channels: observable.map<string, Channel>(initialChannels),
@@ -1099,6 +1046,8 @@ function PrimitiveSetAndAutorunSettingsExample() {
 }
 
 const primitiveSetAndAutorunSettingsSource = `
+const initialTags = ["decoder", "timing", "telemetry"];
+
 function PrimitiveSetAndAutorunSettingsExample() {
   const tagStore = useMemo(() => observable({ tags: new Set(initialTags) }), []);
   const preferenceStore = useMemo(() => observable({ mode: "Desk", volume: 35 }), []);
@@ -1258,27 +1207,6 @@ export const WindowDocumentAndSelectorListeners: Story = {
       await waitFor(() => expect(canvas.getByText("window key:K")).toBeInTheDocument());
       await expect(canvas.getByText("selector target clicked")).toBeInTheDocument();
       await userEvent.click(canvas.getByRole("button", { name: "Disarm globals" }));
-    });
-  },
-};
-
-export const ScalarMobxResourceReplacement: Story = {
-  render: () => (
-    <StoryExample>
-      <ScalarMobxResourceReplacementExample />
-    </StoryExample>
-  ),
-  parameters: storySource(scalarMobxResourceReplacementSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("replaces scalar resource subscriptions on observable changes", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Increase load" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("RX:41:normal"),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Toggle link" }));
-      await expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("TX:41:normal");
     });
   },
 };
