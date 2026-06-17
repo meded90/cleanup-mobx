@@ -80,10 +80,68 @@ import { cleanupTimeout } from "@meded90/cleanup/cleanupTimeout";
 
 ## Release
 
-1. Update `version` in `package.json`.
-2. Run `pnpm check`.
-3. Create a GitHub release or push a tag named `v*`.
-4. Publish to npm with provenance.
+1. Start from a clean `main` branch:
+
+   ```bash
+   git switch main
+   git pull --ff-only
+   git status --short
+   pnpm install --frozen-lockfile
+   ```
+
+2. Bump the package version:
+
+   ```bash
+   npm version patch
+   ```
+
+   Use `npm version minor` or `npm version major` instead when the release is not a patch. This updates `package.json`, creates a release commit, and creates the matching `v*` tag.
+
+3. Validate the package before publishing:
+
+   ```bash
+   pnpm check
+   pnpm pack:dry
+   ```
+
+   Inspect the dry-run output and make sure only the intended files are included.
+
+4. Push the release commit and tag:
+
+   ```bash
+   git push origin main --follow-tags
+   ```
+
+5. Make sure npm authentication is ready:
+
+   ```bash
+   npm login
+   npm whoami
+   npm view @meded90/cleanup version
+   ```
+
+   The `npm view` version must be lower than the local `package.json` version.
+
+6. Publish the package:
+
+   ```bash
+   npm publish --access public
+   ```
+
+   The package is scoped, so `--access public` is required for the first public publish. `publishConfig.access` also keeps later publishes public.
+
+7. Verify the published version:
+
+   ```bash
+   npm view @meded90/cleanup version
+   npm view @meded90/cleanup dist-tags
+   ```
+
+`publishConfig.provenance` is enabled for CI-based publishing. npm provenance requires publishing from a supported cloud CI runner such as GitHub Actions or GitLab CI/CD; for a local manual publish, set up a publish workflow or disable provenance for that one command if npm rejects the local publish:
+
+```bash
+NPM_CONFIG_PROVENANCE=false npm publish --access public
+```
 
 ## Storybook
 
