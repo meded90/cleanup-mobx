@@ -15,8 +15,7 @@ function rewriteMdxFile(filePath) {
 
   const title = getDocTitle(filePath);
   const content = fs.readFileSync(filePath, "utf8");
-  const nextContent = content
-    .replace(/<Meta title="[^"]+" \/>/, `<Meta title="${title}" />`)
+  const nextContent = content.replace(/<Meta title="[^"]+" \/>/, `<Meta title="${title}" />`);
 
   if (nextContent !== content) {
     fs.writeFileSync(filePath, nextContent);

@@ -53,9 +53,7 @@ addons.register(ADDON_ID, () => {
   if (sourcePanel) {
     const orderedPanels = {
       [PANEL_ID]: sourcePanel,
-      ...Object.fromEntries(
-        Object.entries(panels).filter(([id]) => id !== PANEL_ID),
-      ),
+      ...Object.fromEntries(Object.entries(panels).filter(([id]) => id !== PANEL_ID)),
     };
 
     Object.keys(panels).forEach((id) => delete panels[id]);
