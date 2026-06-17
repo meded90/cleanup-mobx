@@ -29,6 +29,88 @@ Additional aspects:
 */
 
 describe("cleanupInterval_function", () => {
+  it("test_dispose_while_async_callback_is_pending_runs_returned_cleanup", async () => {
+    vi.useFakeTimers();
+
+    let resolveCallback: (() => void) | undefined;
+    const returnedCleanup = vi.fn();
+
+    const cb = vi.fn(async () => {
+      await new Promise<void>((resolve) => {
+        resolveCallback = resolve;
+      });
+
+      return returnedCleanup;
+    });
+
+    const dispose = cleanupInterval(cb, 10);
+
+    await vi.advanceTimersByTimeAsync(10);
+    expect(cb).toHaveBeenCalledTimes(1);
+
+    dispose();
+    expect(returnedCleanup).not.toHaveBeenCalled();
+
+    resolveCallback?.();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(returnedCleanup).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(100);
+    expect(cb).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
+  it("test_dispose_while_next_async_callback_is_pending_does_not_repeat_previous_cleanup", async () => {
+    vi.useFakeTimers();
+
+    let callCount = 0;
+    let resolveSecondCallback: (() => void) | undefined;
+    const previousCleanup = vi.fn();
+    const pendingCleanup = vi.fn();
+
+    const cb = vi.fn(async () => {
+      callCount += 1;
+
+      if (callCount === 1) {
+        return previousCleanup;
+      }
+
+      await new Promise<void>((resolve) => {
+        resolveSecondCallback = resolve;
+      });
+
+      return pendingCleanup;
+    });
+
+    const dispose = cleanupInterval(cb, 10);
+
+    await vi.advanceTimersByTimeAsync(10);
+    expect(cb).toHaveBeenCalledTimes(1);
+    expect(previousCleanup).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(10);
+    expect(cb).toHaveBeenCalledTimes(2);
+    expect(previousCleanup).toHaveBeenCalledTimes(1);
+
+    dispose();
+    expect(previousCleanup).toHaveBeenCalledTimes(1);
+    expect(pendingCleanup).not.toHaveBeenCalled();
+
+    resolveSecondCallback?.();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(pendingCleanup).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(100);
+    expect(cb).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
   it("test_async_callback_does_not_overlap_when_previous_tick_is_pending", async () => {
     vi.useFakeTimers();
 

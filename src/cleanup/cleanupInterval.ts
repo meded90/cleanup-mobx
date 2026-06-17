@@ -24,14 +24,19 @@ export function cleanupInterval(cb: () => Disposer, delay: number | StringValue)
       return;
     }
 
-    dispose?.();
+    const previousDispose = dispose;
+    dispose = undefined;
+    previousDispose?.();
+
     const effect = await cb();
-    dispose = isFunction(effect) ? effect : undefined;
+    const nextDispose = isFunction(effect) ? effect : undefined;
 
     if (isDisposed) {
+      nextDispose?.();
       return;
     }
 
+    dispose = nextDispose;
     timeoutId = setTimeout(run, intervalMs);
   }
 
