@@ -12,7 +12,7 @@
     "timer",
     "typescript"
   ],
-  "homepage": "https://github.com/meded90/cleanup-mobx#readme",
+  "homepage": "https://meded90.github.io/cleanup-mobx/",
   "bugs": {
     "url": "https://github.com/meded90/cleanup-mobx/issues"
   },
@@ -114,9 +114,7 @@
     },
     "./package.json": "./package.json"
   },
-  "publishConfig": {
-    "provenance": true
-  },
+  "publishConfig": {},
   "scripts": {
     "dev": "storybook dev -p 6007",
     "storybook": "storybook dev -p 6007",
