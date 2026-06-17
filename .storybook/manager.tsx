@@ -46,6 +46,21 @@ addons.register(ADDON_ID, () => {
     title: "Source",
     render: ({ active }) => <SourcePanel active={active} />,
   });
+
+  const panels = addons.getElements(types.PANEL);
+  const sourcePanel = panels[PANEL_ID];
+
+  if (sourcePanel) {
+    const orderedPanels = {
+      [PANEL_ID]: sourcePanel,
+      ...Object.fromEntries(
+        Object.entries(panels).filter(([id]) => id !== PANEL_ID),
+      ),
+    };
+
+    Object.keys(panels).forEach((id) => delete panels[id]);
+    Object.assign(panels, orderedPanels);
+  }
 });
 
 const panelStyle = {
