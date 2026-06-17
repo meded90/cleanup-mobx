@@ -32,28 +32,29 @@ const disposeTimeout = cleanupTimeout(() => {
   store.hideSuccess();
 }, "1s");
 
+// Call dispose at the appropriate lifecycle stage.
 disposeTimeout();
 disposeReaction();
 ```
 
 ## API
 
-- `cleanupReaction`
-- `cleanupReactionList`
-- `cleanupReactionPrimitiveList`
-- `cleanupReactionMap`
-- `cleanupAutorun`
-- `cleanupEventListener`
-- `cleanupWindowEventListener`
-- `cleanupDocumentEventListener`
-- `cleanupBodyEventListener`
-- `cleanupSelectorEventListener`
-- `cleanupTimeout`
-- `cleanupInterval`
-- `cleanupRequestAnimationFrame`
-- `cleanupIdleCallback`
-- `ms`
-- `StringValue`
+- [`cleanupReaction`](./src/cleanup/cleanupReaction.ts)
+- [`cleanupReactionList`](./src/cleanup/cleanupReactionList.ts)
+- [`cleanupReactionPrimitiveList`](./src/cleanup/cleanupReactionPrimitiveList.ts)
+- [`cleanupReactionMap`](./src/cleanup/cleanupReactionMap.ts)
+- [`cleanupAutorun`](./src/cleanup/cleanupAutorun.ts)
+- [`cleanupEventListener`](./src/cleanup/cleanupEventListener.ts)
+- [`cleanupWindowEventListener`](./src/cleanup/cleanupEventListener.ts)
+- [`cleanupDocumentEventListener`](./src/cleanup/cleanupEventListener.ts)
+- [`cleanupBodyEventListener`](./src/cleanup/cleanupEventListener.ts)
+- [`cleanupSelectorEventListener`](./src/cleanup/cleanupEventListener.ts)
+- [`cleanupTimeout`](./src/cleanup/cleanupTimeout.ts)
+- [`cleanupInterval`](./src/cleanup/cleanupInterval.ts)
+- [`cleanupRequestAnimationFrame`](./src/cleanup/cleanupRequestAnimationFrame.ts)
+- [`cleanupIdleCallback`](./src/cleanup/cleanupIdleCallback.ts)
+- [`ms`](./src/ms.ts)
+- [`StringValue`](./src/types/msStringValue.ts)
 
 ## Scripts
 
