@@ -5,6 +5,8 @@ import { StoryExample, storySource } from "./storySource";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+//region Event listener
+
 function EventListenerExample() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [clicks, setClicks] = useState(0);
@@ -81,3 +83,5 @@ export const DomEvent: Story = {
   ),
   parameters: storySource(eventListenerExampleSource),
 };
+
+//endregion

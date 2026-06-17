@@ -45,45 +45,6 @@ type Channel = {
   packets: number;
 };
 
-const searchCatalog: SearchItem[] = [
-  { id: "rx-1", label: "Ion drift alert", group: "Space weather" },
-  { id: "rx-2", label: "Decoder warm start", group: "Decoder" },
-  { id: "tx-1", label: "Tower handover", group: "Tower" },
-  { id: "pa-1", label: "PA cooldown window", group: "Power" },
-  { id: "rx-3", label: "Propagation ionogram", group: "Space weather" },
-];
-
-const feedProfiles: FeedProfile[] = [
-  { id: "alpha", title: "Alpha telemetry", latencyMs: 90 },
-  { id: "beta", title: "Beta telemetry", latencyMs: 140 },
-];
-
-const fallbackFeedProfile: FeedProfile = {
-  id: "fallback",
-  title: "Fallback telemetry",
-  latencyMs: 120,
-};
-
-const idleTiles = [
-  "Map tiles",
-  "Decoder hints",
-  "Audio presets",
-  "Timeline rows",
-  "Command palette",
-];
-
-const initialJobs: Job[] = [
-  { id: 1, title: "Warm decoder", state: "queued" },
-  { id: 2, title: "Open tower stream", state: "running" },
-];
-
-const initialChannels: [string, Channel][] = [
-  ["rx", { id: "rx", title: "RX channel", packets: 12 }],
-  ["tx", { id: "tx", title: "TX channel", packets: 8 }],
-];
-
-const initialTags = ["decoder", "timing", "telemetry"];
-
 const logAdvancedExample = logAndAction("advanced example log");
 
 const exampleStyle: CSSProperties = {
@@ -138,10 +99,6 @@ function pushLog(setter: (updater: (value: string[]) => string[]) => void, messa
   setter((value) => [message, ...value].slice(0, 5));
 }
 
-function getFeedProfile(index: number): FeedProfile {
-  return feedProfiles[index] ?? fallbackFeedProfile;
-}
-
 function LogList(props: { items: string[] }) {
   if (props.items.length === 0) {
     return <span style={{ color: "#667085" }}>No events yet</span>;
@@ -155,6 +112,16 @@ function LogList(props: { items: string[] }) {
     </ol>
   );
 }
+
+//region Debounced command search
+
+const searchCatalog: SearchItem[] = [
+  { id: "rx-1", label: "Ion drift alert", group: "Space weather" },
+  { id: "rx-2", label: "Decoder warm start", group: "Decoder" },
+  { id: "tx-1", label: "Tower handover", group: "Tower" },
+  { id: "pa-1", label: "PA cooldown window", group: "Power" },
+  { id: "rx-3", label: "Propagation ionogram", group: "Space weather" },
+];
 
 function DebouncedCommandSearchExample() {
   const [query, setQuery] = useState("");
@@ -247,6 +214,57 @@ function DebouncedCommandSearchExample() {
 }
 `;
 
+const meta = {
+  title: "Example/Advanced Examples",
+  component: DebouncedCommandSearchExample,
+} satisfies Meta<typeof DebouncedCommandSearchExample>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const DebouncedCommandSearch: Story = {
+  render: () => (
+    <StoryExample>
+      <DebouncedCommandSearchExample />
+    </StoryExample>
+  ),
+  parameters: storySource(debouncedCommandSearchSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("cleans previous timeout and applies the last query", async () => {
+      const input = canvas.getByLabelText("Search commands");
+      await userEvent.clear(input);
+      await userEvent.type(input, "ion");
+      await expect(canvas.getByTestId("search-status")).toHaveTextContent("Debouncing input");
+      await waitFor(() =>
+        expect(canvas.getByTestId("search-status")).toHaveTextContent('Applied "ion"'),
+      );
+      await expect(canvas.getByTestId("search-results")).toHaveTextContent("Ion drift alert");
+    });
+  },
+};
+
+//endregion
+
+//region Switchable telemetry interval
+
+const feedProfiles: FeedProfile[] = [
+  { id: "alpha", title: "Alpha telemetry", latencyMs: 90 },
+  { id: "beta", title: "Beta telemetry", latencyMs: 140 },
+];
+
+const fallbackFeedProfile: FeedProfile = {
+  id: "fallback",
+  title: "Fallback telemetry",
+  latencyMs: 120,
+};
+
+function getFeedProfile(index: number): FeedProfile {
+  return feedProfiles[index] ?? fallbackFeedProfile;
+}
+
 function SwitchableTelemetryIntervalExample() {
   const [feedRunning, setFeedRunning] = useState(false);
   const [feedIndex, setFeedIndex] = useState(0);
@@ -333,6 +351,32 @@ function SwitchableTelemetryIntervalExample() {
   );
 }
 `;
+
+export const SwitchableTelemetryInterval: Story = {
+  render: () => (
+    <StoryExample>
+      <SwitchableTelemetryIntervalExample />
+    </StoryExample>
+  ),
+  parameters: storySource(switchableTelemetryIntervalSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("starts, switches and stops without duplicate timers", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Start feed" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("feed-ticks")).not.toHaveTextContent("Packets: 0"),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Switch channel" }));
+      await expect(canvas.getByTestId("feed-channel")).toHaveTextContent("Beta telemetry");
+      await userEvent.click(canvas.getByRole("button", { name: "Stop feed" }));
+    });
+  },
+};
+
+//endregion
+
+//region Request animation frame progress
 
 function RequestAnimationFrameProgressExample() {
   const [rafRunning, setRafRunning] = useState(false);
@@ -446,6 +490,38 @@ function RequestAnimationFrameProgressExample() {
 }
 `;
 
+export const RequestAnimationFrameProgress: Story = {
+  render: () => (
+    <StoryExample>
+      <RequestAnimationFrameProgressExample />
+    </StoryExample>
+  ),
+  parameters: storySource(requestAnimationFrameProgressSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("updates progress through animation frames", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Start animation" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("raf-progress")).not.toHaveTextContent("Progress: 0%"),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Stop animation" }));
+    });
+  },
+};
+
+//endregion
+
+//region Idle staged preload
+
+const idleTiles = [
+  "Map tiles",
+  "Decoder hints",
+  "Audio presets",
+  "Timeline rows",
+  "Command palette",
+];
+
 function IdleStagedPreloadExample() {
   const [loadedTiles, setLoadedTiles] = useState<string[]>([]);
   const [idleStatus, setIdleStatus] = useState("Not queued");
@@ -558,6 +634,28 @@ function IdleStagedPreloadExample() {
 }
 `;
 
+export const IdleStagedPreload: Story = {
+  render: () => (
+    <StoryExample>
+      <IdleStagedPreloadExample />
+    </StoryExample>
+  ),
+  parameters: storySource(idleStagedPreloadSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("loads staged work through idle callbacks", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Queue preload" }));
+      await waitFor(() => expect(canvas.getByTestId("idle-status")).toHaveTextContent("Loaded"));
+      await expect(canvas.getByTestId("idle-count")).toHaveTextContent("Loaded: 5/5");
+    });
+  },
+};
+
+//endregion
+
+//region Element event listener with click cleanup
+
 function ElementEventListenerWithClickCleanupExample() {
   const zoneRef = useRef<HTMLDivElement>(null);
   const [zoneClicks, setZoneClicks] = useState(0);
@@ -639,6 +737,29 @@ function ElementEventListenerWithClickCleanupExample() {
   );
 }
 `;
+
+export const ElementEventListenerWithClickCleanup: Story = {
+  render: () => (
+    <StoryExample>
+      <ElementEventListenerWithClickCleanupExample />
+    </StoryExample>
+  ),
+  parameters: storySource(elementEventListenerWithClickCleanupSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("reacts to element events and runs per-click cleanup", async () => {
+      await userEvent.hover(canvas.getByText("Click or hover the zone"));
+      await userEvent.click(canvas.getByText("Click or hover the zone"));
+      await expect(canvas.getByTestId("zone-entries")).toHaveTextContent(/Pointer entries: [1-9]/);
+      await expect(canvas.getByTestId("zone-clicks")).toHaveTextContent("Clicks: 1");
+    });
+  },
+};
+
+//endregion
+
+//region Window document and selector listeners
 
 function WindowDocumentAndSelectorListenersExample() {
   const [globalArmed, setGlobalArmed] = useState(false);
@@ -724,6 +845,36 @@ function WindowDocumentAndSelectorListenersExample() {
   }, [armed]);
 }
 `;
+
+export const WindowDocumentAndSelectorListeners: Story = {
+  render: () => (
+    <StoryExample>
+      <WindowDocumentAndSelectorListenersExample />
+    </StoryExample>
+  ),
+  parameters: storySource(windowDocumentAndSelectorListenersSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("registers window, document and selector listeners while armed", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Arm globals" }));
+      await userEvent.keyboard("k");
+      await userEvent.click(canvas.getByRole("button", { name: "Selector target" }));
+      await waitFor(() => expect(canvas.getByText("window key:K")).toBeInTheDocument());
+      await expect(canvas.getByText("selector target clicked")).toBeInTheDocument();
+      await userEvent.click(canvas.getByRole("button", { name: "Disarm globals" }));
+    });
+  },
+};
+
+//endregion
+
+//region Object list subscriptions
+
+const initialJobs: Job[] = [
+  { id: 1, title: "Warm decoder", state: "queued" },
+  { id: 2, title: "Open tower stream", state: "running" },
+];
 
 function ObjectListSubscriptionsExample() {
   const jobStore = useMemo(
@@ -836,6 +987,42 @@ function ObjectListSubscriptionsExample() {
   }, [store]);
 }
 `;
+
+export const ObjectListSubscriptions: Story = {
+  render: () => (
+    <StoryExample>
+      <ObjectListSubscriptionsExample />
+    </StoryExample>
+  ),
+  parameters: storySource(objectListSubscriptionsSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("tracks added, updated and removed object list items", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Add job" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("active-jobs")).toHaveTextContent("Active jobs: 3"),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Update job" }));
+      await waitFor(() =>
+        expect(canvas.getByText("refresh Open tower stream")).toBeInTheDocument(),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Remove job" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("active-jobs")).toHaveTextContent("Active jobs: 2"),
+      );
+    });
+  },
+};
+
+//endregion
+
+//region Map keyed stream subscriptions
+
+const initialChannels: [string, Channel][] = [
+  ["rx", { id: "rx", title: "RX channel", packets: 12 }],
+  ["tx", { id: "tx", title: "TX channel", packets: 8 }],
+];
 
 function MapKeyedStreamSubscriptionsExample() {
   const channelStore = useMemo(
@@ -950,6 +1137,37 @@ function MapKeyedStreamSubscriptionsExample() {
   }, [store]);
 }
 `;
+
+export const MapKeyedStreamSubscriptions: Story = {
+  render: () => (
+    <StoryExample>
+      <MapKeyedStreamSubscriptionsExample />
+    </StoryExample>
+  ),
+  parameters: storySource(mapKeyedStreamSubscriptionsSource),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step("tracks map entries by key and refreshes changed values", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Add channel" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("active-channels")).toHaveTextContent("Active channels: 3"),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Update RX" }));
+      await waitFor(() => expect(canvas.getByText("refresh rx")).toBeInTheDocument());
+      await userEvent.click(canvas.getByRole("button", { name: "Drop backup" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("active-channels")).toHaveTextContent("Active channels: 2"),
+      );
+    });
+  },
+};
+
+//endregion
+
+//region Primitive set and autorun settings
+
+const initialTags = ["decoder", "timing", "telemetry"];
 
 function PrimitiveSetAndAutorunSettingsExample() {
   const tagStore = useMemo(
@@ -1079,190 +1297,6 @@ function PrimitiveSetAndAutorunSettingsExample() {
 }
 `;
 
-const meta = {
-  title: "Example/Advanced Examples",
-  component: DebouncedCommandSearchExample,
-} satisfies Meta<typeof DebouncedCommandSearchExample>;
-
-export default meta;
-
-type Story = StoryObj<typeof meta>;
-
-export const DebouncedCommandSearch: Story = {
-  render: () => (
-    <StoryExample>
-      <DebouncedCommandSearchExample />
-    </StoryExample>
-  ),
-  parameters: storySource(debouncedCommandSearchSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("cleans previous timeout and applies the last query", async () => {
-      const input = canvas.getByLabelText("Search commands");
-      await userEvent.clear(input);
-      await userEvent.type(input, "ion");
-      await expect(canvas.getByTestId("search-status")).toHaveTextContent("Debouncing input");
-      await waitFor(() =>
-        expect(canvas.getByTestId("search-status")).toHaveTextContent('Applied "ion"'),
-      );
-      await expect(canvas.getByTestId("search-results")).toHaveTextContent("Ion drift alert");
-    });
-  },
-};
-
-export const SwitchableTelemetryInterval: Story = {
-  render: () => (
-    <StoryExample>
-      <SwitchableTelemetryIntervalExample />
-    </StoryExample>
-  ),
-  parameters: storySource(switchableTelemetryIntervalSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("starts, switches and stops without duplicate timers", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Start feed" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("feed-ticks")).not.toHaveTextContent("Packets: 0"),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Switch channel" }));
-      await expect(canvas.getByTestId("feed-channel")).toHaveTextContent("Beta telemetry");
-      await userEvent.click(canvas.getByRole("button", { name: "Stop feed" }));
-    });
-  },
-};
-
-export const RequestAnimationFrameProgress: Story = {
-  render: () => (
-    <StoryExample>
-      <RequestAnimationFrameProgressExample />
-    </StoryExample>
-  ),
-  parameters: storySource(requestAnimationFrameProgressSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("updates progress through animation frames", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Start animation" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("raf-progress")).not.toHaveTextContent("Progress: 0%"),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Stop animation" }));
-    });
-  },
-};
-
-export const IdleStagedPreload: Story = {
-  render: () => (
-    <StoryExample>
-      <IdleStagedPreloadExample />
-    </StoryExample>
-  ),
-  parameters: storySource(idleStagedPreloadSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("loads staged work through idle callbacks", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Queue preload" }));
-      await waitFor(() => expect(canvas.getByTestId("idle-status")).toHaveTextContent("Loaded"));
-      await expect(canvas.getByTestId("idle-count")).toHaveTextContent("Loaded: 5/5");
-    });
-  },
-};
-
-export const ElementEventListenerWithClickCleanup: Story = {
-  render: () => (
-    <StoryExample>
-      <ElementEventListenerWithClickCleanupExample />
-    </StoryExample>
-  ),
-  parameters: storySource(elementEventListenerWithClickCleanupSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("reacts to element events and runs per-click cleanup", async () => {
-      await userEvent.hover(canvas.getByText("Click or hover the zone"));
-      await userEvent.click(canvas.getByText("Click or hover the zone"));
-      await expect(canvas.getByTestId("zone-entries")).toHaveTextContent(/Pointer entries: [1-9]/);
-      await expect(canvas.getByTestId("zone-clicks")).toHaveTextContent("Clicks: 1");
-    });
-  },
-};
-
-export const WindowDocumentAndSelectorListeners: Story = {
-  render: () => (
-    <StoryExample>
-      <WindowDocumentAndSelectorListenersExample />
-    </StoryExample>
-  ),
-  parameters: storySource(windowDocumentAndSelectorListenersSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("registers window, document and selector listeners while armed", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Arm globals" }));
-      await userEvent.keyboard("k");
-      await userEvent.click(canvas.getByRole("button", { name: "Selector target" }));
-      await waitFor(() => expect(canvas.getByText("window key:K")).toBeInTheDocument());
-      await expect(canvas.getByText("selector target clicked")).toBeInTheDocument();
-      await userEvent.click(canvas.getByRole("button", { name: "Disarm globals" }));
-    });
-  },
-};
-
-export const ObjectListSubscriptions: Story = {
-  render: () => (
-    <StoryExample>
-      <ObjectListSubscriptionsExample />
-    </StoryExample>
-  ),
-  parameters: storySource(objectListSubscriptionsSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("tracks added, updated and removed object list items", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Add job" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("active-jobs")).toHaveTextContent("Active jobs: 3"),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Update job" }));
-      await waitFor(() =>
-        expect(canvas.getByText("refresh Open tower stream")).toBeInTheDocument(),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Remove job" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("active-jobs")).toHaveTextContent("Active jobs: 2"),
-      );
-    });
-  },
-};
-
-export const MapKeyedStreamSubscriptions: Story = {
-  render: () => (
-    <StoryExample>
-      <MapKeyedStreamSubscriptionsExample />
-    </StoryExample>
-  ),
-  parameters: storySource(mapKeyedStreamSubscriptionsSource),
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step("tracks map entries by key and refreshes changed values", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Add channel" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("active-channels")).toHaveTextContent("Active channels: 3"),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Update RX" }));
-      await waitFor(() => expect(canvas.getByText("refresh rx")).toBeInTheDocument());
-      await userEvent.click(canvas.getByRole("button", { name: "Drop backup" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("active-channels")).toHaveTextContent("Active channels: 2"),
-      );
-    });
-  },
-};
-
 export const PrimitiveSetAndAutorunSettings: Story = {
   render: () => (
     <StoryExample>
@@ -1287,3 +1321,5 @@ export const PrimitiveSetAndAutorunSettings: Story = {
     });
   },
 };
+
+//endregion

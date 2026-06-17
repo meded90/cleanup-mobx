@@ -5,6 +5,8 @@ import { StoryExample, storySource } from "./storySource";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+//region Timers
+
 function TimerExample() {
   const [ticks, setTicks] = useState(0);
   const [message, setMessage] = useState("waiting for timeout");
@@ -80,3 +82,5 @@ export const Timers: Story = {
   ),
   parameters: storySource(timerExampleSource),
 };
+
+//endregion

@@ -16,39 +16,6 @@ import type { RefObject } from "react";
 
 type Disposer = () => void;
 
-type ScalarResourceStore = {
-  link: "RX" | "TX";
-  load: number;
-  warning: boolean;
-};
-
-type LinkTask = {
-  id: number;
-  title: string;
-  state: "queued" | "running" | "done";
-};
-
-type LinkTaskStore = {
-  tasks: LinkTask[];
-};
-
-type ScalarResourceProps = {
-  store: ScalarResourceStore;
-};
-
-type TaskSubscriptionProps = {
-  store: LinkTaskStore;
-};
-
-type CanvasTelemetryProps = {
-  running: boolean;
-  tone: "cyan" | "amber";
-};
-
-type FeedClientProps = {
-  channel: "alpha" | "beta";
-};
-
 const panelStyle = {
   display: "grid",
   alignContent: "start",
@@ -124,6 +91,18 @@ function EventList(props: { items: string[] }) {
     </ol>
   );
 }
+
+//region Scalar MobX resource replacement
+
+type ScalarResourceStore = {
+  link: "RX" | "TX";
+  load: number;
+  warning: boolean;
+};
+
+type ScalarResourceProps = {
+  store: ScalarResourceStore;
+};
 
 class ScalarResourceViewModel extends CleanupViewModel<ScalarResourceProps> {
   snapshot = "RX:24:normal";
@@ -201,6 +180,134 @@ const ScalarMobxResourceReplacementExample = observer(
     );
   },
 );
+
+const scalarMobxResourceReplacementSource = `
+import { action, makeObservable, observable } from "mobx";
+import { observer } from "mobx-react";
+import { useMemo } from "react";
+import { useViewModel, ViewModel } from "mobx-react-viewmodel";
+import { cleanupReaction } from "@meded90/cleanup";
+
+class CleanupViewModel<P extends object> extends ViewModel<P> {
+  protected addDisposer(disposer: () => void) {
+    this.disposers.push(disposer);
+  }
+
+  dispose() {
+    super.dispose();
+    this.disposers = [];
+  }
+}
+
+class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceStore }> {
+  snapshot = "RX:24:normal";
+  events: string[] = [];
+
+  constructor(props: { store: ScalarResourceStore }) {
+    super(props);
+    makeObservable(this, {
+      snapshot: observable,
+      events: observable.shallow,
+      increaseLoad: action.bound,
+      toggleLink: action.bound,
+    });
+  }
+
+  init() {
+    this.addDisposer(
+      cleanupReaction(
+        () => [
+          this.props.store.link,
+          this.props.store.load,
+          this.props.store.warning ? "warning" : "normal",
+        ].join(":"),
+        (summary) => {
+          this.snapshot = summary;
+          this.events = [\`opened \${summary}\`, ...this.events].slice(0, 6);
+          return () => {
+            this.events = [\`closed \${summary}\`, ...this.events].slice(0, 6);
+          };
+        },
+      ),
+    );
+  }
+
+  increaseLoad() {
+    this.props.store.load += 17;
+    this.props.store.warning = this.props.store.load > 50;
+  }
+
+  toggleLink() {
+    this.props.store.link = this.props.store.link === "RX" ? "TX" : "RX";
+  }
+}
+
+const ScalarMobxResourceReplacementExample = observer(function Example() {
+  const store = useMemo(
+    () => observable({ link: "RX", load: 24, warning: false }),
+    [],
+  );
+  const vm = useViewModel(ScalarResourceViewModel, { store });
+
+  return (
+    <section>
+      <button onClick={vm.increaseLoad}>Increase load</button>
+      <button onClick={vm.toggleLink}>Toggle link</button>
+      <span>{vm.snapshot}</span>
+      <ol>{vm.events.map((event) => <li key={event}>{event}</li>)}</ol>
+    </section>
+  );
+});
+`;
+
+const meta = {
+  title: "Example/MobX",
+  component: ScalarMobxResourceReplacementExample,
+} satisfies Meta<typeof ScalarMobxResourceReplacementExample>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const ScalarMobxResourceReplacement: Story = {
+  render: () => (
+    <StoryExample>
+      <ScalarMobxResourceReplacementExample />
+    </StoryExample>
+  ),
+  parameters: storySource(scalarMobxResourceReplacementSource),
+  play: async ({ canvasElement, step }) => {
+    const { expect, userEvent, waitFor, within } = await import("storybook/test");
+    const canvas = within(canvasElement);
+
+    await step("replaces scalar resource subscriptions on observable changes", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Increase load" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("RX:41:normal"),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Toggle link" }));
+      await expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("TX:41:normal");
+    });
+  },
+};
+
+//endregion
+
+//region ViewModel list subscriptions
+
+type LinkTask = {
+  id: number;
+  title: string;
+  state: "queued" | "running" | "done";
+};
+
+type LinkTaskStore = {
+  tasks: LinkTask[];
+};
+
+type TaskSubscriptionProps = {
+  store: LinkTaskStore;
+};
 
 class TaskSubscriptionViewModel extends CleanupViewModel<TaskSubscriptionProps> {
   activeTaskIds: number[] = [];
@@ -296,6 +403,108 @@ const ViewModelListSubscriptionsExample = observer(function ViewModelListSubscri
     </section>
   );
 });
+
+const viewModelListSubscriptionsSource = `
+class TaskSubscriptionViewModel extends CleanupViewModel<{ store: LinkTaskStore }> {
+  activeTaskIds: number[] = [];
+  events: string[] = [];
+
+  constructor(props: { store: LinkTaskStore }) {
+    super(props);
+    makeObservable(this, {
+      activeTaskIds: observable.shallow,
+      events: observable.shallow,
+      activeLabel: computed,
+      addTask: action.bound,
+      updateTask: action.bound,
+      removeTask: action.bound,
+    });
+  }
+
+  init() {
+    this.addDisposer(
+      cleanupReactionList(
+        () => this.props.store.tasks,
+        (task) => {
+          this.activeTaskIds = [...new Set([...this.activeTaskIds, task.id])];
+          this.events = [\`open \${task.title}:\${task.state}\`, ...this.events].slice(0, 6);
+          return (isModified) => {
+            this.events = [
+              \`\${isModified ? "refresh" : "close"} \${task.title}\`,
+              ...this.events,
+            ].slice(0, 6);
+            if (!isModified) {
+              this.activeTaskIds = this.activeTaskIds.filter((id) => id !== task.id);
+            }
+          };
+        },
+        { getKey: (task) => task.id },
+      ),
+    );
+  }
+
+  get activeLabel() {
+    return \`Active tasks: \${this.activeTaskIds.length}\`;
+  }
+}
+
+const Example = observer(function Example() {
+  const store = useMemo(() => observable({
+    tasks: [
+      { id: 1, title: "Warm decoder", state: "queued" },
+      { id: 2, title: "Open tower stream", state: "running" },
+    ],
+  }), []);
+  const vm = useViewModel(TaskSubscriptionViewModel, { store });
+
+  return (
+    <section>
+      <button onClick={vm.addTask}>Add task</button>
+      <button onClick={vm.updateTask}>Update task</button>
+      <button onClick={vm.removeTask}>Remove task</button>
+      <span>{vm.activeLabel}</span>
+      <ol>{vm.events.map((event) => <li key={event}>{event}</li>)}</ol>
+    </section>
+  );
+});
+`;
+
+export const ViewModelListSubscriptions: Story = {
+  render: () => (
+    <StoryExample>
+      <ViewModelListSubscriptionsExample />
+    </StoryExample>
+  ),
+  parameters: storySource(viewModelListSubscriptionsSource),
+  play: async ({ canvasElement, step }) => {
+    const { expect, userEvent, waitFor, within } = await import("storybook/test");
+    const canvas = within(canvasElement);
+
+    await step("tracks added, updated and removed tasks inside the view model", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Add task" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("active-tasks")).toHaveTextContent("Active tasks: 3"),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Update task" }));
+      await waitFor(() =>
+        expect(canvas.getByText("refresh Open tower stream")).toBeInTheDocument(),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Remove task" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("active-tasks")).toHaveTextContent("Active tasks: 2"),
+      );
+    });
+  },
+};
+
+//endregion
+
+//region Canvas ref lifecycle
+
+type CanvasTelemetryProps = {
+  running: boolean;
+  tone: "cyan" | "amber";
+};
 
 class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
   frames = 0;
@@ -425,215 +634,6 @@ const CanvasRefLifecycleExample = observer(function CanvasRefLifecycleExample() 
   );
 });
 
-class StableFeedClientViewModel extends CleanupViewModel<FeedClientProps> {
-  packets = 0;
-  events: string[] = [];
-
-  constructor(
-    props: FeedClientProps,
-    private readonly clientId: string,
-  ) {
-    super(props);
-    makeObservable(this, {
-      packets: observable,
-      events: observable.shallow,
-      label: computed,
-    });
-  }
-
-  init(): void {
-    this.addDisposer(
-      cleanupReaction(
-        () => this.props.channel,
-        (channel) => {
-          this.events = pushEvent(this.events, `connect ${this.clientId}:${channel}`);
-          return cleanupInterval(() => {
-            runInAction(() => {
-              this.packets += channel === "alpha" ? 1 : 2;
-            });
-          }, "220ms");
-        },
-      ),
-    );
-  }
-
-  get label(): string {
-    return `${this.clientId}:${this.props.channel} packets ${this.packets}`;
-  }
-}
-
-const FactoryStableClientExample = observer(function FactoryStableClientExample() {
-  const [channel, setChannel] = useState<FeedClientProps["channel"]>("alpha");
-  const vm = useViewModelFactory(
-    (props?: FeedClientProps) =>
-      new StableFeedClientViewModel(props ?? { channel: "alpha" }, "waterfall-feed"),
-    { channel },
-  );
-
-  return (
-    <section style={panelStyle}>
-      <h3 style={titleStyle}>Factory stable client</h3>
-      <div style={rowStyle}>
-        <button
-          style={buttonStyle}
-          type="button"
-          onClick={() => setChannel((value) => (value === "alpha" ? "beta" : "alpha"))}
-        >
-          Switch channel
-        </button>
-      </div>
-      <span data-testid="feed-client-label" style={metricStyle}>
-        {vm.label}
-      </span>
-      <EventList items={vm.events} />
-    </section>
-  );
-});
-
-const scalarMobxResourceReplacementSource = `
-import { action, makeObservable, observable } from "mobx";
-import { observer } from "mobx-react";
-import { useMemo } from "react";
-import { useViewModel, ViewModel } from "mobx-react-viewmodel";
-import { cleanupReaction } from "@meded90/cleanup";
-
-class CleanupViewModel<P extends object> extends ViewModel<P> {
-  protected addDisposer(disposer: () => void) {
-    this.disposers.push(disposer);
-  }
-
-  dispose() {
-    super.dispose();
-    this.disposers = [];
-  }
-}
-
-class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceStore }> {
-  snapshot = "RX:24:normal";
-  events: string[] = [];
-
-  constructor(props: { store: ScalarResourceStore }) {
-    super(props);
-    makeObservable(this, {
-      snapshot: observable,
-      events: observable.shallow,
-      increaseLoad: action.bound,
-      toggleLink: action.bound,
-    });
-  }
-
-  init() {
-    this.addDisposer(
-      cleanupReaction(
-        () => [
-          this.props.store.link,
-          this.props.store.load,
-          this.props.store.warning ? "warning" : "normal",
-        ].join(":"),
-        (summary) => {
-          this.snapshot = summary;
-          this.events = [\`opened \${summary}\`, ...this.events].slice(0, 6);
-          return () => {
-            this.events = [\`closed \${summary}\`, ...this.events].slice(0, 6);
-          };
-        },
-      ),
-    );
-  }
-
-  increaseLoad() {
-    this.props.store.load += 17;
-    this.props.store.warning = this.props.store.load > 50;
-  }
-
-  toggleLink() {
-    this.props.store.link = this.props.store.link === "RX" ? "TX" : "RX";
-  }
-}
-
-const ScalarMobxResourceReplacementExample = observer(function Example() {
-  const store = useMemo(
-    () => observable({ link: "RX", load: 24, warning: false }),
-    [],
-  );
-  const vm = useViewModel(ScalarResourceViewModel, { store });
-
-  return (
-    <section>
-      <button onClick={vm.increaseLoad}>Increase load</button>
-      <button onClick={vm.toggleLink}>Toggle link</button>
-      <span>{vm.snapshot}</span>
-      <ol>{vm.events.map((event) => <li key={event}>{event}</li>)}</ol>
-    </section>
-  );
-});
-`;
-
-const viewModelListSubscriptionsSource = `
-class TaskSubscriptionViewModel extends CleanupViewModel<{ store: LinkTaskStore }> {
-  activeTaskIds: number[] = [];
-  events: string[] = [];
-
-  constructor(props: { store: LinkTaskStore }) {
-    super(props);
-    makeObservable(this, {
-      activeTaskIds: observable.shallow,
-      events: observable.shallow,
-      activeLabel: computed,
-      addTask: action.bound,
-      updateTask: action.bound,
-      removeTask: action.bound,
-    });
-  }
-
-  init() {
-    this.addDisposer(
-      cleanupReactionList(
-        () => this.props.store.tasks,
-        (task) => {
-          this.activeTaskIds = [...new Set([...this.activeTaskIds, task.id])];
-          this.events = [\`open \${task.title}:\${task.state}\`, ...this.events].slice(0, 6);
-          return (isModified) => {
-            this.events = [
-              \`\${isModified ? "refresh" : "close"} \${task.title}\`,
-              ...this.events,
-            ].slice(0, 6);
-            if (!isModified) {
-              this.activeTaskIds = this.activeTaskIds.filter((id) => id !== task.id);
-            }
-          };
-        },
-        { getKey: (task) => task.id },
-      ),
-    );
-  }
-
-  get activeLabel() {
-    return \`Active tasks: \${this.activeTaskIds.length}\`;
-  }
-}
-
-const Example = observer(function Example() {
-  const store = useMemo(() => observable({
-    tasks: [
-      { id: 1, title: "Warm decoder", state: "queued" },
-      { id: 2, title: "Open tower stream", state: "running" },
-    ],
-  }), []);
-  const vm = useViewModel(TaskSubscriptionViewModel, { store });
-
-  return (
-    <section>
-      <button onClick={vm.addTask}>Add task</button>
-      <button onClick={vm.updateTask}>Update task</button>
-      <button onClick={vm.removeTask}>Remove task</button>
-      <span>{vm.activeLabel}</span>
-      <ol>{vm.events.map((event) => <li key={event}>{event}</li>)}</ol>
-    </section>
-  );
-});
-`;
-
 const canvasRefLifecycleSource = `
 class CanvasTelemetryViewModel extends CleanupViewModel<CanvasTelemetryProps> {
   frames = 0;
@@ -716,6 +716,101 @@ const Example = observer(function Example() {
 });
 `;
 
+export const CanvasRefLifecycle: Story = {
+  render: () => (
+    <StoryExample>
+      <CanvasRefLifecycleExample />
+    </StoryExample>
+  ),
+  parameters: storySource(canvasRefLifecycleSource),
+  play: async ({ canvasElement, step }) => {
+    const { expect, userEvent, waitFor, within } = await import("storybook/test");
+    const canvas = within(canvasElement);
+
+    await step("starts and stops a canvas VM with ref-bound cleanup", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Run" }));
+      await waitFor(() =>
+        expect(canvas.getByTestId("canvas-status")).toHaveTextContent(/Running \/ [1-9]/),
+      );
+      await userEvent.click(canvas.getByRole("button", { name: "Pause" }));
+      await waitFor(() => expect(canvas.getByTestId("canvas-status")).toHaveTextContent("Paused"));
+    });
+  },
+};
+
+//endregion
+
+//region Factory stable client
+
+type FeedClientProps = {
+  channel: "alpha" | "beta";
+};
+
+class StableFeedClientViewModel extends CleanupViewModel<FeedClientProps> {
+  packets = 0;
+  events: string[] = [];
+
+  constructor(
+    props: FeedClientProps,
+    private readonly clientId: string,
+  ) {
+    super(props);
+    makeObservable(this, {
+      packets: observable,
+      events: observable.shallow,
+      label: computed,
+    });
+  }
+
+  init(): void {
+    this.addDisposer(
+      cleanupReaction(
+        () => this.props.channel,
+        (channel) => {
+          this.events = pushEvent(this.events, `connect ${this.clientId}:${channel}`);
+          return cleanupInterval(() => {
+            runInAction(() => {
+              this.packets += channel === "alpha" ? 1 : 2;
+            });
+          }, "220ms");
+        },
+      ),
+    );
+  }
+
+  get label(): string {
+    return `${this.clientId}:${this.props.channel} packets ${this.packets}`;
+  }
+}
+
+const FactoryStableClientExample = observer(function FactoryStableClientExample() {
+  const [channel, setChannel] = useState<FeedClientProps["channel"]>("alpha");
+  const vm = useViewModelFactory(
+    (props?: FeedClientProps) =>
+      new StableFeedClientViewModel(props ?? { channel: "alpha" }, "waterfall-feed"),
+    { channel },
+  );
+
+  return (
+    <section style={panelStyle}>
+      <h3 style={titleStyle}>Factory stable client</h3>
+      <div style={rowStyle}>
+        <button
+          style={buttonStyle}
+          type="button"
+          onClick={() => setChannel((value) => (value === "alpha" ? "beta" : "alpha"))}
+        >
+          Switch channel
+        </button>
+      </div>
+      <span data-testid="feed-client-label" style={metricStyle}>
+        {vm.label}
+      </span>
+      <EventList items={vm.events} />
+    </section>
+  );
+});
+
 const factoryStableClientSource = `
 class StableFeedClientViewModel extends CleanupViewModel<{ channel: "alpha" | "beta" }> {
   packets = 0;
@@ -773,87 +868,6 @@ const Example = observer(function Example() {
 });
 `;
 
-const meta = {
-  title: "Example/MobX",
-  component: ScalarMobxResourceReplacementExample,
-} satisfies Meta<typeof ScalarMobxResourceReplacementExample>;
-
-export default meta;
-
-type Story = StoryObj<typeof meta>;
-
-export const ScalarMobxResourceReplacement: Story = {
-  render: () => (
-    <StoryExample>
-      <ScalarMobxResourceReplacementExample />
-    </StoryExample>
-  ),
-  parameters: storySource(scalarMobxResourceReplacementSource),
-  play: async ({ canvasElement, step }) => {
-    const { expect, userEvent, waitFor, within } = await import("storybook/test");
-    const canvas = within(canvasElement);
-
-    await step("replaces scalar resource subscriptions on observable changes", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Increase load" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("RX:41:normal"),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Toggle link" }));
-      await expect(canvas.getByTestId("scalar-snapshot")).toHaveTextContent("TX:41:normal");
-    });
-  },
-};
-
-export const ViewModelListSubscriptions: Story = {
-  render: () => (
-    <StoryExample>
-      <ViewModelListSubscriptionsExample />
-    </StoryExample>
-  ),
-  parameters: storySource(viewModelListSubscriptionsSource),
-  play: async ({ canvasElement, step }) => {
-    const { expect, userEvent, waitFor, within } = await import("storybook/test");
-    const canvas = within(canvasElement);
-
-    await step("tracks added, updated and removed tasks inside the view model", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Add task" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("active-tasks")).toHaveTextContent("Active tasks: 3"),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Update task" }));
-      await waitFor(() =>
-        expect(canvas.getByText("refresh Open tower stream")).toBeInTheDocument(),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Remove task" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("active-tasks")).toHaveTextContent("Active tasks: 2"),
-      );
-    });
-  },
-};
-
-export const CanvasRefLifecycle: Story = {
-  render: () => (
-    <StoryExample>
-      <CanvasRefLifecycleExample />
-    </StoryExample>
-  ),
-  parameters: storySource(canvasRefLifecycleSource),
-  play: async ({ canvasElement, step }) => {
-    const { expect, userEvent, waitFor, within } = await import("storybook/test");
-    const canvas = within(canvasElement);
-
-    await step("starts and stops a canvas VM with ref-bound cleanup", async () => {
-      await userEvent.click(canvas.getByRole("button", { name: "Run" }));
-      await waitFor(() =>
-        expect(canvas.getByTestId("canvas-status")).toHaveTextContent(/Running \/ [1-9]/),
-      );
-      await userEvent.click(canvas.getByRole("button", { name: "Pause" }));
-      await waitFor(() => expect(canvas.getByTestId("canvas-status")).toHaveTextContent("Paused"));
-    });
-  },
-};
-
 export const FactoryStableClient: Story = {
   render: () => (
     <StoryExample>
@@ -876,3 +890,5 @@ export const FactoryStableClient: Story = {
     });
   },
 };
+
+//endregion
