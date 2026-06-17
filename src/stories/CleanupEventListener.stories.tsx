@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
 import { cleanupEventListener } from "../index";
-import { StoryExample, storySource } from "./storySource";
+import {
+  StoryCard,
+  StoryExample,
+  storyButtonStyle,
+  storyMetricStyle,
+  storySource,
+} from "./storySource";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -22,24 +28,18 @@ function EventListenerExample() {
   }, []);
 
   return (
-    <section
-      style={{
-        display: "grid",
-        gap: 8,
-        justifyItems: "start",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <strong>cleanupEventListener</strong>
-      <button ref={buttonRef} type="button">
+    <StoryCard title="cleanupEventListener">
+      <button ref={buttonRef} style={storyButtonStyle} type="button">
         Click target
       </button>
-      <span>Clicks: {clicks}</span>
-    </section>
+      <span style={storyMetricStyle}>Clicks: {clicks}</span>
+    </StoryCard>
   );
 }
 
 const eventListenerExampleSource = `
+import { StoryCard } from "./storySource";
+
 function EventListenerExample() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [clicks, setClicks] = useState(0);
@@ -55,13 +55,12 @@ function EventListenerExample() {
   }, []);
 
   return (
-    <section>
-      <strong>cleanupEventListener</strong>
+    <StoryCard title="cleanupEventListener">
       <button ref={buttonRef} type="button">
         Click target
       </button>
       <span>Clicks: {clicks}</span>
-    </section>
+    </StoryCard>
   );
 }
 `;
