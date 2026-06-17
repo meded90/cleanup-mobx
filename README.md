@@ -53,8 +53,7 @@ disposeReaction();
 - [`cleanupInterval`](./src/cleanup/cleanupInterval.ts)
 - [`cleanupRequestAnimationFrame`](./src/cleanup/cleanupRequestAnimationFrame.ts)
 - [`cleanupIdleCallback`](./src/cleanup/cleanupIdleCallback.ts)
-- [`ms`](./src/ms.ts)
-- [`StringValue`](./src/types/msStringValue.ts)
+
 
 ## Scripts
 
