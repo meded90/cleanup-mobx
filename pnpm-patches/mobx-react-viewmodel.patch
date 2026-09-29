@@ -1,0 +1,74 @@
+diff --git a/dist/mobx-react-viewmodel.esm.js b/dist/mobx-react-viewmodel.esm.js
+--- a/dist/mobx-react-viewmodel.esm.js
++++ b/dist/mobx-react-viewmodel.esm.js
+@@ -1,5 +1,5 @@
+ import { __decorate } from 'tslib';
+-import { observable, makeObservable, comparer, runInAction } from 'mobx';
++import { observableRef, makeObservable, compareShallow, runInAction } from 'mobx';
+ import { useState, useEffect } from 'react';
+ 
+ /// ------------------------------------------
+@@ -10,7 +10,7 @@
+     this.props = void 0;
+     this.disposers = [];
+     this.props = props;
+-    makeObservable(this);
++    makeObservable(this, { props: observableRef });
+   }
+   var _proto = ViewModel.prototype;
+   _proto.dispose = function dispose() {
+@@ -20,7 +20,7 @@
+   };
+   return ViewModel;
+ }();
+-__decorate([observable.ref], ViewModel.prototype, "props", void 0);
++
+ 
+ function _setPrototypeOf(o, p) {
+   _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
+@@ -58,7 +58,7 @@
+ 
+ function useViewModelInternal(viewModel, props) {
+   useEffect(function () {
+-    if (props && !comparer.shallow(props, viewModel.props)) {
++    if (props && !compareShallow(props, viewModel.props)) {
+       runInAction(function () {
+         // If props changed - update it in view-model to trigger mobx-reactions
+         viewModel.props = props;
+diff --git a/dist/mobx-react-viewmodel.cjs.development.js b/dist/mobx-react-viewmodel.cjs.development.js
+--- a/dist/mobx-react-viewmodel.cjs.development.js
++++ b/dist/mobx-react-viewmodel.cjs.development.js
+@@ -14,7 +14,7 @@
+     this.props = void 0;
+     this.disposers = [];
+     this.props = props;
+-    mobx.makeObservable(this);
++    mobx.makeObservable(this, { props: mobx.observableRef });
+   }
+   var _proto = ViewModel.prototype;
+   _proto.dispose = function dispose() {
+@@ -24,7 +24,7 @@
+   };
+   return ViewModel;
+ }();
+-tslib.__decorate([mobx.observable.ref], ViewModel.prototype, "props", void 0);
++
+ 
+ function _setPrototypeOf(o, p) {
+   _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
+@@ -62,7 +62,7 @@
+ 
+ function useViewModelInternal(viewModel, props) {
+   react.useEffect(function () {
+-    if (props && !mobx.comparer.shallow(props, viewModel.props)) {
++    if (props && !mobx.compareShallow(props, viewModel.props)) {
+       mobx.runInAction(function () {
+         // If props changed - update it in view-model to trigger mobx-reactions
+         viewModel.props = props;
+diff --git a/dist/mobx-react-viewmodel.cjs.production.min.js b/dist/mobx-react-viewmodel.cjs.production.min.js
+--- a/dist/mobx-react-viewmodel.cjs.production.min.js
++++ b/dist/mobx-react-viewmodel.cjs.production.min.js
+@@ -1,2 +1,2 @@
+-"use strict";Object.defineProperty(exports,"__esModule",{value:!0});var t=require("tslib"),e=require("mobx"),r=require("react"),n=function(){function t(t){this.props=void 0,this.disposers=[],this.props=t,e.makeObservable(this)}return t.prototype.dispose=function(){this.disposers.forEach((function(t){return t()}))},t}();function o(t,e){return(o=Object.setPrototypeOf?Object.setPrototypeOf.bind():function(t,e){return t.__proto__=e,t})(t,e)}function u(){if("undefined"==typeof Reflect||!Reflect.construct)return!1;if(Reflect.construct.sham)return!1;if("function"==typeof Proxy)return!0;try{return Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],(function(){}))),!0}catch(t){return!1}}function i(t,e,r){return(i=u()?Reflect.construct.bind():function(t,e,r){var n=[null];n.push.apply(n,e);var u=new(Function.bind.apply(t,n));return r&&o(u,r.prototype),u}).apply(null,arguments)}function c(t,n){r.useEffect((function(){n&&!e.comparer.shallow(n,t.props)&&e.runInAction((function(){t.props=n}))}),[t,n]),r.useEffect((function(){return null==t.init||t.init(),function(){return null==t.dispose?void 0:t.dispose()}}),[t])}t.__decorate([e.observable.ref],n.prototype,"props",void 0),exports.ViewModel=n,exports.useViewModel=function(t,e,n){var o=r.useState((function(){return e?Array.isArray(n)?i(t,[e].concat(n)):new t(e):new t}))[0];return c(o,e),o},exports.useViewModelFactory=function(t,e){var n=r.useState((function(){return t(e)}))[0];return c(n,e),n};
++"use strict";Object.defineProperty(exports,"__esModule",{value:!0});var t=require("tslib"),e=require("mobx"),r=require("react"),n=function(){function t(t){this.props=void 0,this.disposers=[],this.props=t,e.makeObservable(this,{props:e.observableRef})}return t.prototype.dispose=function(){this.disposers.forEach((function(t){return t()}))},t}();function o(t,e){return(o=Object.setPrototypeOf?Object.setPrototypeOf.bind():function(t,e){return t.__proto__=e,t})(t,e)}function u(){if("undefined"==typeof Reflect||!Reflect.construct)return!1;if(Reflect.construct.sham)return!1;if("function"==typeof Proxy)return!0;try{return Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],(function(){}))),!0}catch(t){return!1}}function i(t,e,r){return(i=u()?Reflect.construct.bind():function(t,e,r){var n=[null];n.push.apply(n,e);var u=new(Function.bind.apply(t,n));return r&&o(u,r.prototype),u}).apply(null,arguments)}function c(t,n){r.useEffect((function(){n&&!e.compareShallow(n,t.props)&&e.runInAction((function(){t.props=n}))}),[t,n]),r.useEffect((function(){return null==t.init||t.init(),function(){return null==t.dispose?void 0:t.dispose()}}),[t])}exports.ViewModel=n,exports.useViewModel=function(t,e,n){var o=r.useState((function(){return e?Array.isArray(n)?i(t,[e].concat(n)):new t(e):new t}))[0];return c(o,e),o},exports.useViewModelFactory=function(t,e){var n=r.useState((function(){return t(e)}))[0];return c(n,e),n};
+ //# sourceMappingURL=mobx-react-viewmodel.cjs.production.min.js.map

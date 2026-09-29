@@ -1,4 +1,14 @@
-import { action, computed, makeObservable, observable, runInAction, untracked } from "mobx";
+import {
+  action,
+  computed,
+  makeObservable,
+  observable,
+  runInAction,
+  untracked,
+  actionBound,
+  observableRef,
+  observableShallow,
+} from "mobx";
 import { observer } from "mobx-react";
 import { useMemo, useRef, useState } from "react";
 import { useViewModel, useViewModelFactory } from "mobx-react-viewmodel";
@@ -39,7 +49,7 @@ abstract class CleanupViewModel<P extends object> {
   constructor(props: P) {
     this.props = props;
     makeObservable(this, {
-      props: observable.ref,
+      props: observableRef,
     });
   }
 
@@ -59,7 +69,7 @@ class CleanupViewModel<P extends object> {
   constructor(props: P) {
     this.props = props;
     makeObservable(this, {
-      props: observable.ref,
+      props: observableRef,
     });
   }
 
@@ -108,9 +118,9 @@ class ScalarResourceViewModel extends CleanupViewModel<ScalarResourceProps> {
     super(props);
     makeObservable(this, {
       snapshot: observable,
-      events: observable.shallow,
-      increaseLoad: action.bound,
-      toggleWorkspace: action.bound,
+      events: observableShallow,
+      increaseLoad: actionBound,
+      toggleWorkspace: actionBound,
     });
   }
 
@@ -191,9 +201,9 @@ class ScalarResourceViewModel extends CleanupViewModel<{ store: ScalarResourceSt
     super(props);
     makeObservable(this, {
       snapshot: observable,
-      events: observable.shallow,
-      increaseLoad: action.bound,
-      toggleWorkspace: action.bound,
+      events: observableShallow,
+      increaseLoad: actionBound,
+      toggleWorkspace: actionBound,
     });
   }
 
@@ -300,12 +310,12 @@ class TaskSubscriptionViewModel extends CleanupViewModel<TaskSubscriptionProps> 
   constructor(props: TaskSubscriptionProps) {
     super(props);
     makeObservable(this, {
-      activeTaskIds: observable.shallow,
-      events: observable.shallow,
+      activeTaskIds: observableShallow,
+      events: observableShallow,
       activeLabel: computed,
-      addTask: action.bound,
-      updateTask: action.bound,
-      removeTask: action.bound,
+      addTask: actionBound,
+      updateTask: actionBound,
+      removeTask: actionBound,
     });
   }
 
@@ -395,12 +405,12 @@ class TaskSubscriptionViewModel extends CleanupViewModel<{ store: WorkflowTaskSt
   constructor(props: { store: WorkflowTaskStore }) {
     super(props);
     makeObservable(this, {
-      activeTaskIds: observable.shallow,
-      events: observable.shallow,
+      activeTaskIds: observableShallow,
+      events: observableShallow,
       activeLabel: computed,
-      addTask: action.bound,
-      updateTask: action.bound,
-      removeTask: action.bound,
+      addTask: actionBound,
+      updateTask: actionBound,
+      removeTask: actionBound,
     });
   }
 
@@ -511,12 +521,12 @@ class ObjectListSubscriptionViewModel extends CleanupViewModel<JobSubscriptionPr
   constructor(props: JobSubscriptionProps) {
     super(props);
     makeObservable(this, {
-      activeJobIds: observable.shallow,
-      events: observable.shallow,
+      activeJobIds: observableShallow,
+      events: observableShallow,
       activeLabel: computed,
-      addJob: action.bound,
-      updateJob: action.bound,
-      removeJob: action.bound,
+      addJob: actionBound,
+      updateJob: actionBound,
+      removeJob: actionBound,
     });
   }
 
@@ -600,12 +610,12 @@ class ObjectListSubscriptionViewModel extends CleanupViewModel<{ store: JobStore
   constructor(props: { store: JobStore }) {
     super(props);
     makeObservable(this, {
-      activeJobIds: observable.shallow,
-      events: observable.shallow,
+      activeJobIds: observableShallow,
+      events: observableShallow,
       activeLabel: computed,
-      addJob: action.bound,
-      updateJob: action.bound,
-      removeJob: action.bound,
+      addJob: actionBound,
+      updateJob: actionBound,
+      removeJob: actionBound,
     });
   }
 
@@ -717,12 +727,12 @@ class MapKeyedBoardSubscriptionViewModel extends CleanupViewModel<BoardSubscript
   constructor(props: BoardSubscriptionProps) {
     super(props);
     makeObservable(this, {
-      activeBoardIds: observable.shallow,
-      events: observable.shallow,
+      activeBoardIds: observableShallow,
+      events: observableShallow,
       activeLabel: computed,
-      addBoard: action.bound,
-      updateDesign: action.bound,
-      dropArchive: action.bound,
+      addBoard: actionBound,
+      updateDesign: actionBound,
+      dropArchive: actionBound,
     });
   }
 
@@ -808,12 +818,12 @@ class MapKeyedBoardSubscriptionViewModel extends CleanupViewModel<{ store: Proje
   constructor(props: { store: ProjectBoardStore }) {
     super(props);
     makeObservable(this, {
-      activeBoardIds: observable.shallow,
-      events: observable.shallow,
+      activeBoardIds: observableShallow,
+      events: observableShallow,
       activeLabel: computed,
-      addBoard: action.bound,
-      updateDesign: action.bound,
-      dropArchive: action.bound,
+      addBoard: actionBound,
+      updateDesign: actionBound,
+      dropArchive: actionBound,
     });
   }
 
@@ -922,15 +932,15 @@ class PrimitiveSetAndAutorunSettingsViewModel extends CleanupViewModel<Primitive
   constructor(props: PrimitiveSetProps) {
     super(props);
     makeObservable(this, {
-      activeTags: observable.shallow,
-      tagEvents: observable.shallow,
+      activeTags: observableShallow,
+      tagEvents: observableShallow,
       preferenceSummary: observable,
-      preferenceEvents: observable.shallow,
+      preferenceEvents: observableShallow,
       activeTagsLabel: computed,
       combinedEvents: computed,
-      addTag: action.bound,
-      removeBilling: action.bound,
-      cycleMode: action.bound,
+      addTag: actionBound,
+      removeBilling: actionBound,
+      cycleMode: actionBound,
     });
   }
 
@@ -1048,15 +1058,15 @@ class PrimitiveSetAndAutorunSettingsViewModel extends CleanupViewModel<Primitive
   constructor(props: PrimitiveSetProps) {
     super(props);
     makeObservable(this, {
-      activeTags: observable.shallow,
-      tagEvents: observable.shallow,
+      activeTags: observableShallow,
+      tagEvents: observableShallow,
       preferenceSummary: observable,
-      preferenceEvents: observable.shallow,
+      preferenceEvents: observableShallow,
       activeTagsLabel: computed,
       combinedEvents: computed,
-      addTag: action.bound,
-      removeBilling: action.bound,
-      cycleMode: action.bound,
+      addTag: actionBound,
+      removeBilling: actionBound,
+      cycleMode: actionBound,
     });
   }
 
@@ -1407,7 +1417,7 @@ class StableProjectClientViewModel extends CleanupViewModel<ProjectClientProps> 
     super(props);
     makeObservable(this, {
       updates: observable,
-      events: observable.shallow,
+      events: observableShallow,
       label: computed,
     });
   }
@@ -1472,7 +1482,7 @@ class StableProjectClientViewModel extends CleanupViewModel<{ workspace: "planni
     super(props);
     makeObservable(this, {
       updates: observable,
-      events: observable.shallow,
+      events: observableShallow,
       label: computed,
     });
   }

@@ -1,2 +1,5 @@
 allowBuilds:
   esbuild: true
+
+patchedDependencies:
+  mobx-react-viewmodel@0.2.0: pnpm-patches/mobx-react-viewmodel.patch

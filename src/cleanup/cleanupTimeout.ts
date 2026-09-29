@@ -1,10 +1,9 @@
-import lodash from "lodash";
+import isFunction from "lodash/isFunction.js";
+import isString from "lodash/isString.js";
 import { action } from "mobx";
 import ms from "ms";
 
 import { StringValue } from "../types/msStringValue";
-
-const { isFunction, isString } = lodash;
 
 /**
  * Setup/cleanup wrapper for setTimeout:

@@ -1,4 +1,14 @@
-import { action, computed, makeObservable, observable, runInAction, untracked } from "mobx";
+import {
+  action,
+  computed,
+  makeObservable,
+  observable,
+  runInAction,
+  untracked,
+  actionBound,
+  observableRef,
+  observableShallow,
+} from "mobx";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useViewModel } from "mobx-react-viewmodel";
@@ -271,7 +281,7 @@ abstract class CleanupViewModel<P extends object> {
   constructor(props: P) {
     this.props = props;
     makeObservable(this, {
-      props: observable.ref,
+      props: observableRef,
     });
   }
 
@@ -292,17 +302,17 @@ class UserManagementViewModel extends CleanupViewModel<UserManagementProps> {
   constructor(props: UserManagementProps) {
     super(props);
     makeObservable(this, {
-      trackedUsers: observable.shallow,
-      onlineUserIds: observable.shallow,
+      trackedUsers: observableShallow,
+      onlineUserIds: observableShallow,
       roleSummary: observable,
-      events: observable.shallow,
+      events: observableShallow,
       trackedLabel: computed,
       onlineLabel: computed,
-      inviteUser: action.bound,
-      promoteBen: action.bound,
-      deactivateAlice: action.bound,
-      toggleCaraOnline: action.bound,
-      selectRole: action.bound,
+      inviteUser: actionBound,
+      promoteBen: actionBound,
+      deactivateAlice: actionBound,
+      toggleCaraOnline: actionBound,
+      selectRole: actionBound,
     });
   }
 

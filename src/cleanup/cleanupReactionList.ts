@@ -1,10 +1,11 @@
 import {
   action,
-  comparer,
   IReactionDisposer,
   IReactionOptions,
   IReactionPublic,
   reaction,
+  compareDefault,
+  compareStructural,
 } from "mobx";
 
 /**
@@ -88,7 +89,7 @@ export function cleanupReactionList<T extends object, FireImmediately extends bo
 ): IReactionDisposer {
   const { getKey, equals: customEquals, ...reactionOpts } = opts;
   const localDisposer = new Map<string | number | bigint, IDisposerParams>();
-  const equalsComparer: (a: any, b: any) => boolean = customEquals ?? comparer.default;
+  const equalsComparer: (a: any, b: any) => boolean = customEquals ?? compareDefault;
 
   // Create an array comparer that delegates item comparisons to the custom comparer.
   const arrayComparer = (newArray: T[], oldArray: T[]): boolean => {
@@ -98,7 +99,7 @@ export function cleanupReactionList<T extends object, FireImmediately extends bo
 
     // Use MobX structural comparison for the array when no custom comparer is provided.
     if (!customEquals) {
-      return comparer.structural(newArray, oldArray);
+      return compareStructural(newArray, oldArray);
     }
 
     // Compare each item with the custom comparer.

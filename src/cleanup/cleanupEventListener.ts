@@ -1,8 +1,6 @@
-import lodash from "lodash";
+import isFunction from "lodash/isFunction.js";
 
 import { Disposer } from "../types/disposer";
-
-const { isFunction } = lodash;
 
 type RefLike<Type> = {
   readonly current: Type | null;

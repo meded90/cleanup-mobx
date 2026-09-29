@@ -10,7 +10,7 @@ The API follows the React `useEffect` convention: a setup callback may return a 
 pnpm add cleanup-mobx mobx
 ```
 
-`mobx` is a peer dependency. `react` is only used by Storybook examples and TypeScript RefObject typing.
+`mobx` 7 is a peer dependency. For MobX 6, use cleanup-mobx 0.1.x. `react` is only used by Storybook examples and TypeScript RefObject typing.
 
 ## Usage
 

@@ -1,10 +1,10 @@
 import {
   action,
-  comparer,
   IReactionDisposer,
   IReactionOptions,
   IReactionPublic,
   reaction,
+  compareStructural,
 } from "mobx";
 /**
  * Primitive value type supported by cleanupReactionPrimitiveList.
@@ -93,7 +93,7 @@ export function cleanupReactionPrimitiveList<
     }
 
     // Use structural comparison for primitive values.
-    return comparer.structural(newArray, oldArray);
+    return compareStructural(newArray, oldArray);
   };
 
   const newEffect = action(

@@ -26,7 +26,7 @@ export default defineConfig({
       fileName: (format, entryName) => `${entryName}.${format === "es" ? "js" : "cjs"}`,
     },
     rollupOptions: {
-      external: ["lodash", "mobx", "ms"],
+      external: [/^lodash(?:\/|$)/, "mobx", "ms"],
       output: {
         exports: "named",
         globals: {

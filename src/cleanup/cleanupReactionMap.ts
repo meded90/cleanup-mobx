@@ -1,9 +1,9 @@
 import {
-  comparer,
   IReactionDisposer,
   IReactionOptions,
   IReactionPublic,
   ObservableMap,
+  compareShallow,
 } from "mobx";
 
 import { cleanupReaction } from "./cleanupReaction";
@@ -17,7 +17,7 @@ function hasSameKeys<Key extends string | number | bigint, T, IMap extends Map<K
   prev: MapSnapshot<Key, T, IMap>,
   next: MapSnapshot<Key, T, IMap>,
 ): boolean {
-  return comparer.shallow(prev.keys, next.keys);
+  return compareShallow(prev.keys, next.keys);
 }
 
 /**
