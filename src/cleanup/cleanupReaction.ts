@@ -1,4 +1,4 @@
-import { action, IReactionDisposer, IReactionOptions, IReactionPublic, reaction } from "mobx";
+import { IReactionDisposer, IReactionOptions, IReactionPublic, reaction } from "mobx";
 
 /**
  * Creates a MobX reaction with the setup/cleanup pattern:
@@ -24,8 +24,8 @@ export function cleanupReaction<T, FireImmediately extends boolean = true>(
     r: IReactionPublic,
   ) => {
     localDisposer?.(true);
-    const effectAction = action(effect);
-    localDisposer = effectAction(arg, prev, r) ?? undefined;
+    // reaction() already runs newEffect inside an action, so no extra wrapper per run is needed.
+    localDisposer = effect(arg, prev, r) ?? undefined;
   };
 
   const disposer = reaction(expression, newEffect, {

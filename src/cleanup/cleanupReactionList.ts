@@ -1,5 +1,4 @@
 import {
-  action,
   IReactionDisposer,
   IReactionOptions,
   IReactionPublic,
@@ -111,74 +110,75 @@ export function cleanupReactionList<T extends object, FireImmediately extends bo
     return true;
   };
 
-  const newEffect = action(
-    (arg: T[], prev: FireImmediately extends true ? T[] | undefined : T[], r: IReactionPublic) => {
-      // Build a Map for O(1) lookup of previous items by key.
-      const prevKeysMap = new Map<string | number | bigint, T>();
-      prev?.forEach((v) => {
-        prevKeysMap.set(getKey(v), v);
-      });
+  // reaction() already runs newEffect inside an action: the whole pass and all item effects share one batch.
+  const newEffect = (
+    arg: T[],
+    prev: FireImmediately extends true ? T[] | undefined : T[],
+    r: IReactionPublic,
+  ) => {
+    // Build a Map for O(1) lookup of previous items by key.
+    const prevKeysMap = new Map<string | number | bigint, T>();
+    prev?.forEach((v) => {
+      prevKeysMap.set(getKey(v), v);
+    });
 
-      // Build a Set for O(1) lookup of current keys.
-      const currentKeysSet = new Set<string | number | bigint>();
-      arg.forEach((v) => {
-        currentKeysSet.add(getKey(v));
-      });
+    // Build a Set for O(1) lookup of current keys.
+    const currentKeysSet = new Set<string | number | bigint>();
+    arg.forEach((v) => {
+      currentKeysSet.add(getKey(v));
+    });
 
-      // Find new items in O(n) instead of O(n*m).
-      const newArg = arg.filter((v) => {
-        const vKey = getKey(v);
-        return !prevKeysMap.has(vKey);
-      });
+    // Find new items in O(n) instead of O(n*m).
+    const newArg = arg.filter((v) => {
+      const vKey = getKey(v);
+      return !prevKeysMap.has(vKey);
+    });
 
-      // Find removed items in O(m) instead of O(n*m).
-      const removeArg = prev?.filter((v) => {
-        const vKey = getKey(v);
-        return !currentKeysSet.has(vKey);
-      });
+    // Find removed items in O(m) instead of O(n*m).
+    const removeArg = prev?.filter((v) => {
+      const vKey = getKey(v);
+      return !currentKeysSet.has(vKey);
+    });
 
-      // Clean up effects for removed items.
-      removeArg?.forEach((v) => {
-        const key = getKey(v);
+    // Clean up effects for removed items.
+    removeArg?.forEach((v) => {
+      const key = getKey(v);
+      const disposer = localDisposer.get(key);
+      if (disposer) {
+        disposer(); // Omit isModified, which means false/removal.
+        localDisposer.delete(key);
+      }
+    });
+
+    // Handle changed items.
+    arg.forEach((v, index) => {
+      const key = getKey(v);
+      const prevItem = prevKeysMap.get(key); // O(1) instead of O(m).
+
+      // The item existed before and has changed.
+      if (prevItem && !equalsComparer(v, prevItem)) {
         const disposer = localDisposer.get(key);
         if (disposer) {
-          disposer(); // Omit isModified, which means false/removal.
-          localDisposer.delete(key);
+          disposer(true); // isModified = true
         }
-      });
+        // Create a new effect for the changed item.
+        localDisposer.set(key, effect(v, index, arg, prev, r));
+      }
+    });
 
-      // Handle changed items.
-      arg.forEach((v, index) => {
-        const key = getKey(v);
-        const prevItem = prevKeysMap.get(key); // O(1) instead of O(m).
+    // Add effects for new items.
+    // Build a Map for O(1) index lookup instead of O(n) indexOf.
+    const indexMap = new Map<T, number>();
+    arg.forEach((v, index) => {
+      indexMap.set(v, index);
+    });
 
-        // The item existed before and has changed.
-        if (prevItem && !equalsComparer(v, prevItem)) {
-          const disposer = localDisposer.get(key);
-          if (disposer) {
-            disposer(true); // isModified = true
-          }
-          // Create a new effect for the changed item.
-          const effectAction = action(effect);
-          localDisposer.set(key, effectAction(v, index, arg, prev, r));
-        }
-      });
-
-      // Add effects for new items.
-      // Build a Map for O(1) index lookup instead of O(n) indexOf.
-      const indexMap = new Map<T, number>();
-      arg.forEach((v, index) => {
-        indexMap.set(v, index);
-      });
-
-      const effectAction = action(effect);
-      newArg.forEach((v) => {
-        const key = getKey(v);
-        const index = indexMap.get(v) ?? 0;
-        localDisposer.set(key, effectAction(v, index, arg, prev, r));
-      });
-    },
-  );
+    newArg.forEach((v) => {
+      const key = getKey(v);
+      const index = indexMap.get(v) ?? 0;
+      localDisposer.set(key, effect(v, index, arg, prev, r));
+    });
+  };
 
   const disposer = reaction(
     (r) => {

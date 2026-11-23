@@ -1,5 +1,4 @@
 import {
-  action,
   IReactionDisposer,
   IReactionOptions,
   IReactionPublic,
@@ -96,34 +95,32 @@ export function cleanupReactionPrimitiveList<
     return compareStructural(newArray, oldArray);
   };
 
-  const newEffect = action(
-    (
-      arg: Set<E>,
-      prev: FireImmediately extends true ? Set<E> | undefined : Set<E>,
-      r: IReactionPublic,
-    ) => {
-      const prevSet = prev ?? new Set<E>();
-      // Find removed items (present previously, absent currently) in O(m).
-      const removedItems = prevSet?.difference(arg);
+  // reaction() already runs newEffect inside an action: the whole pass and all item effects share one batch.
+  const newEffect = (
+    arg: Set<E>,
+    prev: FireImmediately extends true ? Set<E> | undefined : Set<E>,
+    r: IReactionPublic,
+  ) => {
+    const prevSet = prev ?? new Set<E>();
+    // Find removed items (present previously, absent currently) in O(m).
+    const removedItems = prevSet?.difference(arg);
 
-      // Clean up effects for removed items.
-      for (const item of removedItems) {
-        const disposer = localDisposer.get(item);
-        if (disposer) {
-          disposer();
-          localDisposer.delete(item);
-        }
+    // Clean up effects for removed items.
+    for (const item of removedItems) {
+      const disposer = localDisposer.get(item);
+      if (disposer) {
+        disposer();
+        localDisposer.delete(item);
       }
+    }
 
-      // Add effects for new unique items.
-      // Use a Set to track items already handled in this iteration.
-      const effectAction = action(effect);
-      const newItems = arg.difference(prevSet);
-      for (const item of newItems) {
-        localDisposer.set(item, effectAction(item, prev, r));
-      }
-    },
-  );
+    // Add effects for new unique items.
+    // Use a Set to track items already handled in this iteration.
+    const newItems = arg.difference(prevSet);
+    for (const item of newItems) {
+      localDisposer.set(item, effect(item, prev, r));
+    }
+  };
 
   const disposer = reaction<Set<E>, FireImmediately>(
     (r) => {
